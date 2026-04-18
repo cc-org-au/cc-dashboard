@@ -12,12 +12,14 @@ import IntegrationsScreen from "../components/cc-org-dash/IntegrationsScreen";
 import SettingsScreen from "../components/cc-org-dash/SettingsScreen";
 import AccountScreen from "../components/cc-org-dash/AccountScreen";
 import NotifDrawer from "../components/cc-org-dash/NotifDrawer";
+import GlobalAgentPanel from "../components/cc-org-dash/GlobalAgentPanel";
+import PlatformStatusBar from "../components/cc-org-dash/PlatformStatusBar";
 import GlobalCommandRail from "../components/cc-org-dash/GlobalCommandRail";
 import GlobalCommandDetail, { getGlobalCommandTitle } from "../components/cc-org-dash/GlobalCommandDetail";
 import useIsMobile from "../components/cc-org-dash/useIsMobile";
 import {
   Home, Briefcase, Inbox, Users, BarChart3, FolderOpen, Plug, SettingsIcon,
-  Search, Bell, Plus, ChevronDown, User, LogOut, GitBranch, PanelLeft
+  Search, Bell, Plus, ChevronDown, User, LogOut, GitBranch, PanelLeft, Bot
 } from "../components/cc-org-dash/icons";
 
 const TABS = [
@@ -34,6 +36,7 @@ const TABS = [
 const THEME_KEY = "cc-org-dash-theme";
 const THEME_KEY_LEGACY = "ecoos_theme";
 const GLOBAL_COMMAND_KEY = "cc-global-command-open";
+const ATLAS_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
 
 function readGlobalCommandOpen() {
   try {
@@ -79,6 +82,7 @@ export default function CcOrgDash() {
   const [cmdQuery, setCmdQuery] = useState("");
   const [globalCommandOpen, setGlobalCommandOpen] = useState(readGlobalCommandOpen);
   const [globalCommandSel, setGlobalCommandSel] = useState(null);
+  const [globalAgentOpen, setGlobalAgentOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -109,12 +113,21 @@ export default function CcOrgDash() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: T.pageGradient ?? T.canvas, fontFamily: F.sans, color: T.t1 }} onClick={close}>
 
-      {/* GitHub-style top nav */}
-      <div style={{ background: T.nav, borderBottom: `1px solid ${T.border}`, color: T.t1, flexShrink: 0 }}>
+      {/* GitHub-style top nav — stays above sliding agent panel so toggles remain clickable */}
+      <div
+        style={{
+          background: T.nav,
+          borderBottom: `1px solid ${T.border}`,
+          color: T.t1,
+          flexShrink: 0,
+          position: "relative",
+          zIndex: 520,
+        }}
+      >
         <div style={{ height: isMobile ? 52 : 60, display: "flex", alignItems: "center", padding: isMobile ? "0 10px" : "0 16px", gap: isMobile ? 8 : 16 }}>
           <button
             type="button"
-            title="Company command (portfolio & ops)"
+            title={globalCommandOpen ? "Hide company command" : "Open company command"}
             onClick={(e) => {
               e.stopPropagation();
               setGlobalCommandOpen((o) => !o);
@@ -125,15 +138,25 @@ export default function CcOrgDash() {
               justifyContent: "center",
               width: 36,
               height: 36,
-              borderRadius: 8,
-              border: `1px solid ${T.borderMuted ?? T.border}`,
-              background: T.surface,
+              padding: 0,
+              borderRadius: 10,
+              border: `1px solid ${globalCommandOpen ? T.accentBorder : T.borderMuted ?? T.border}`,
+              background: globalCommandOpen ? T.accentBg : T.surface,
               cursor: "pointer",
-              color: T.t2,
+              color: globalCommandOpen ? T.accent : T.t2,
               flexShrink: 0,
+              transition: `background .18s ${ATLAS_EASE}, border-color .18s, color .18s`,
             }}
           >
-            <PanelLeft size={18} strokeWidth={1.5} />
+            <span
+              style={{
+                display: "inline-flex",
+                transform: globalCommandOpen ? "scaleX(-1)" : "scaleX(1)",
+                transition: `transform 0.32s ${ATLAS_EASE}`,
+              }}
+            >
+              <PanelLeft size={18} strokeWidth={1.5} />
+            </span>
           </button>
           {/* Wordmark */}
           <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
@@ -223,6 +246,39 @@ export default function CcOrgDash() {
                 </div>
               )}
             </div>
+
+            <button
+              type="button"
+              title={globalAgentOpen ? "Close platform agent" : "Open platform agent"}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGlobalAgentOpen((o) => !o);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                border: `1px solid ${globalAgentOpen ? T.accentBorder : T.borderMuted ?? T.border}`,
+                background: globalAgentOpen ? T.accentBg : T.surface,
+                cursor: "pointer",
+                color: globalAgentOpen ? T.accent : T.t2,
+                flexShrink: 0,
+                transition: `background .18s ${ATLAS_EASE}, border-color .18s, color .18s`,
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-flex",
+                  transform: globalAgentOpen ? "scaleX(-1)" : "scaleX(1)",
+                  transition: `transform 0.32s ${ATLAS_EASE}`,
+                }}
+              >
+                <Bot size={18} strokeWidth={1.5} />
+              </span>
+            </button>
           </div>
         </div>
 
@@ -247,6 +303,7 @@ export default function CcOrgDash() {
             <div style={{ padding: "0 12px 10px", flexShrink: 0, boxSizing: "border-box", width: "100%" }}>
               <button
                 type="button"
+                title="Open company command"
                 onClick={(e) => {
                   e.stopPropagation();
                   setGlobalCommandOpen(true);
@@ -255,22 +312,19 @@ export default function CcOrgDash() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 8,
                   padding: "10px 14px",
                   width: "100%",
                   borderRadius: 10,
                   border: `1px solid ${T.borderMuted ?? T.border}`,
                   background: T.raised,
                   color: T.t2,
-                  fontSize: 13,
-                  fontWeight: 600,
                   cursor: "pointer",
-                  fontFamily: F.sans,
                   boxSizing: "border-box",
                 }}
               >
-                <PanelLeft size={16} strokeWidth={1.5} />
-                Company command
+                <span style={{ display: "inline-flex" }}>
+                  <PanelLeft size={18} strokeWidth={1.5} />
+                </span>
               </button>
             </div>
           )}
@@ -298,6 +352,7 @@ export default function CcOrgDash() {
               alignItems: "center",
               justifyContent: "flex-start",
               boxSizing: "border-box",
+              paddingBottom: 38,
             }}
             onClick={close}
           >
@@ -340,6 +395,16 @@ export default function CcOrgDash() {
       </SlideOver>
 
       {notifOpen && <NotifDrawer T={T} onClose={() => setNotifOpen(false)} />}
+
+      <GlobalAgentPanel
+        T={T}
+        open={globalAgentOpen}
+        onClose={() => setGlobalAgentOpen(false)}
+        isMobile={isMobile}
+        topOffsetPx={isMobile ? 104 : 116}
+      />
+
+      <PlatformStatusBar T={T} />
 
       {cmdOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.35)", zIndex: 400, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "14vh" }}

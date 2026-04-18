@@ -25,13 +25,15 @@ export const DB = {
     { id: "p6", name: "Partner API v2",       dept: "Engineering", status: "on_track", progress: 60, owner: "Priya S.", due: "May 28", priority: "low" },
   ],
   tasks: [
-    { id: "t1", title: "Review Q2 pipeline forecast",  project: "Q2 Growth Initiative", assignee: "Sarah M.", priority: "high",   status: "todo",        due: "Apr 22" },
-    { id: "t2", title: "Resolve auth service latency", project: "Platform Redesign",    assignee: "James K.", priority: "high",   status: "in_progress", due: "Apr 20" },
-    { id: "t3", title: "Deploy Kafka consumer v3",     project: "Data Pipeline v3",     assignee: "Priya S.", priority: "medium", status: "in_progress", due: "Apr 25" },
-    { id: "t4", title: "Draft EMEA go-to-market plan", project: "EMEA Expansion",       assignee: "Marco R.", priority: "medium", status: "todo",        due: "May 10" },
-    { id: "t5", title: "Complete ISO control mapping", project: "ISO 27001 Audit",      assignee: "Admin",    priority: "high",   status: "review",      due: "Apr 21" },
-    { id: "t6", title: "Update OpenAPI docs",          project: "Partner API v2",       assignee: "Priya S.", priority: "low",    status: "done",        due: "Apr 18" },
-    { id: "t7", title: "Competitor analysis report",   project: "Q2 Growth Initiative", assignee: "Sarah M.", priority: "medium", status: "done",        due: "Apr 15" },
+    { id: "t1", issueKey: "CCO-241", title: "Review Q2 pipeline forecast",  project: "Q2 Growth Initiative", assignee: "Sarah M.", priority: "high",   status: "todo",        due: "Apr 22", labels: ["Growth", "Forecast"] },
+    { id: "t2", issueKey: "CCO-242", title: "Resolve auth service latency", project: "Platform Redesign",    assignee: "James K.", priority: "high",   status: "in_progress", due: "Apr 20", labels: ["Bug", "Platform"] },
+    { id: "t3", issueKey: "CCO-243", title: "Deploy Kafka consumer v3",     project: "Data Pipeline v3",     assignee: "Priya S.", priority: "medium", status: "in_progress", due: "Apr 25", labels: ["Infra"] },
+    { id: "t4", issueKey: "CCO-244", title: "Draft EMEA go-to-market plan", project: "EMEA Expansion",       assignee: "Marco R.", priority: "medium", status: "todo",        due: "May 10", labels: ["EMEA", "GTM"] },
+    { id: "t5", issueKey: "CCO-245", title: "Complete ISO control mapping", project: "ISO 27001 Audit",      assignee: "Admin",    priority: "high",   status: "review",      due: "Apr 21", labels: ["Compliance", "ISO"] },
+    { id: "t6", issueKey: "CCO-246", title: "Update OpenAPI docs",          project: "Partner API v2",       assignee: "Priya S.", priority: "low",    status: "done",        due: "Apr 18", labels: ["Docs", "API"] },
+    { id: "t7", issueKey: "CCO-247", title: "Competitor analysis report",   project: "Q2 Growth Initiative", assignee: "Sarah M.", priority: "medium", status: "done",        due: "Apr 15", labels: ["Research"] },
+    { id: "t8", issueKey: "CCO-248", title: "Data transmission audit",      project: "Platform Redesign",    assignee: "James K.", priority: "high",   status: "review",      due: "Apr 23", labels: ["Bug", "Security"] },
+    { id: "t9", issueKey: "CCO-249", title: "Webhook retry policy",         project: "Partner API v2",       assignee: "Priya S.", priority: "low",    status: "todo",        due: "May 2",  labels: ["Backend"] },
   ],
   people: [
     { id: "u1", name: "Sarah Mitchell",  role: "Head of Sales",      dept: "Sales",       status: "active", email: "sarah@co.io" },
@@ -251,3 +253,105 @@ export const FILE_DATA = {
 };
 
 export const FILE_ICONS = { pdf: "📄", document: "📝", spreadsheet: "📊", image: "🖼", archive: "📦", code: "{ }", video: "🎬", default: "📄" };
+
+/** Workflow builder presets — nodes, edges, canvas hints for cc-org-dash Work → Workflows */
+export const WORKFLOW_PRESETS = [
+  {
+    id: "w1",
+    name: "Sensor Alert Pipeline",
+    status: "active",
+    summary: "IoT → Slack",
+    nodes: [
+      { id: "n1", x: 30, y: 100, type: "trigger", label: "Sensor Alert", sub: "IoT threshold breach", color: "#0891b2" },
+      { id: "n2", x: 210, y: 40, type: "filter", label: "Severity Check", sub: "Critical only", color: "#9a6700" },
+      { id: "n3", x: 210, y: 170, type: "action", label: "Log Event", sub: "Write to database", color: "#6e7781" },
+      { id: "n4", x: 390, y: 40, type: "ai", label: "EcoScan AI", sub: "Species analysis", color: "#8250df" },
+      { id: "n5", x: 390, y: 170, type: "action", label: "Create Task", sub: "Assign to team", color: "#0969da" },
+      { id: "n6", x: 570, y: 40, type: "action", label: "Slack Notify", sub: "#alerts channel", color: "#1a7f37" },
+      { id: "n7", x: 570, y: 170, type: "action", label: "Email Report", sub: "Weekly digest", color: "#1a7f37" },
+      { id: "n8", x: 740, y: 105, type: "end", label: "Complete", sub: "Workflow done", color: "#374151" },
+    ],
+    edges: [
+      { f: "n1", t: "n2" }, { f: "n1", t: "n3" },
+      { f: "n2", t: "n4" }, { f: "n2", t: "n5" },
+      { f: "n4", t: "n6" }, { f: "n5", t: "n7" },
+      { f: "n6", t: "n8" }, { f: "n7", t: "n8" },
+    ],
+  },
+  {
+    id: "w2",
+    name: "Weekly Report Digest",
+    status: "inactive",
+    summary: "CRM → Email",
+    nodes: [
+      { id: "r1", x: 40, y: 110, type: "trigger", label: "Schedule", sub: "Every Monday 08:00", color: "#0891b2" },
+      { id: "r2", x: 240, y: 110, type: "action", label: "Pull CRM stats", sub: "Salesforce query", color: "#0969da" },
+      { id: "r3", x: 440, y: 110, type: "ai", label: "Summarize", sub: "Exec summary", color: "#8250df" },
+      { id: "r4", x: 640, y: 110, type: "action", label: "Email leaders", sub: "Distribution list", color: "#1a7f37" },
+    ],
+    edges: [{ f: "r1", t: "r2" }, { f: "r2", t: "r3" }, { f: "r3", t: "r4" }],
+  },
+  {
+    id: "w3",
+    name: "New User Onboarding",
+    status: "active",
+    summary: "Sign-up → Tasks",
+    nodes: [
+      { id: "u1", x: 30, y: 110, type: "trigger", label: "Account created", sub: "Auth webhook", color: "#0891b2" },
+      { id: "u2", x: 200, y: 110, type: "action", label: "Welcome email", sub: "Template A", color: "#0969da" },
+      { id: "u3", x: 370, y: 110, type: "filter", label: "Role check", sub: "Admin vs member", color: "#9a6700" },
+      { id: "u4", x: 540, y: 50, type: "action", label: "Admin checklist", sub: "3 tasks", color: "#1a7f37" },
+      { id: "u5", x: 540, y: 170, type: "action", label: "Member tour", sub: "Product tips", color: "#1a7f37" },
+      { id: "u6", x: 710, y: 110, type: "end", label: "Onboarding done", sub: "Log completion", color: "#374151" },
+    ],
+    edges: [
+      { f: "u1", t: "u2" }, { f: "u2", t: "u3" },
+      { f: "u3", t: "u4" }, { f: "u3", t: "u5" },
+      { f: "u4", t: "u6" }, { f: "u5", t: "u6" },
+    ],
+  },
+];
+
+/** Roadmap quarters — light theme, Linear-inspired structure */
+export const ROADMAP_QUARTERS = [
+  {
+    id: "q2",
+    label: "Q2 2026",
+    items: [
+      { id: "rm1", title: "Partner API v2 GA", icon: "🔷", status: "active", avatars: ["Priya S.", "James K."] },
+      { id: "rm2", title: "EMEA pilot rollout", icon: "🌍", status: "planned", avatars: ["Marco R."] },
+    ],
+  },
+  {
+    id: "q3",
+    label: "Q3 2026",
+    items: [
+      { id: "rm3", title: "Workflow builder v2", icon: "⚡", status: "active", avatars: ["Sarah M.", "Aria Chen"] },
+      { id: "rm4", title: "Mobile approvals", icon: "📱", status: "planned", avatars: ["Luna Park"] },
+    ],
+  },
+  {
+    id: "up",
+    label: "Upcoming",
+    items: [
+      { id: "rm5", title: "AI copilot — Finance", icon: "◈", status: "idea", avatars: ["Aria Chen"] },
+    ],
+  },
+];
+
+/** Active cycle snapshot — right-hand summary panel */
+export const ACTIVE_CYCLE = {
+  name: "Cycle 14",
+  range: "Apr 7 — Apr 18, 2026",
+  pctDone: 57,
+  effortTotal: 328,
+  effortDone: 186,
+  weekdaysLeft: 1,
+  burndownHint: "Slightly behind ideal; scope stable.",
+  members: [
+    { name: "Sarah M.", pct: 65, of: 88 },
+    { name: "James K.", pct: 48, of: 72 },
+    { name: "Priya S.", pct: 72, of: 94 },
+    { name: "Marco R.", pct: 41, of: 54 },
+  ],
+};

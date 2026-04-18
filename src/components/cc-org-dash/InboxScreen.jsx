@@ -20,14 +20,14 @@ import {
   ChevronDown,
   Briefcase,
   FolderOpen,
-  LayoutGrid,
   List,
   Clock,
   AlertCircle,
-  GitBranch,
-  Plug,
+  Activity,
+  ExternalLink,
   CircleDot,
   UserPlus,
+  Plus,
 } from "./icons";
 
 const RAIL = {
@@ -75,10 +75,15 @@ function noteKey(threadId) {
   return threadId.replace(/-/g, "");
 }
 
+const ATLAS_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
+
 export default function InboxScreen({ T, isMobile }) {
   const [navOpen, setNavOpen] = useState(() => loadRail(LS_NAV, true));
   const [detailOpen, setDetailOpen] = useState(() => loadRail(LS_DETAIL, true));
-  const [ticketsOpen, setTicketsOpen] = useState(false);
+  const [openTabIds, setOpenTabIds] = useState(() =>
+    INBOX_THREADS.length ? INBOX_THREADS.slice(0, Math.min(4, INBOX_THREADS.length)).map((t) => t.id) : []
+  );
+  const [addTabMenuOpen, setAddTabMenuOpen] = useState(false);
   const [workspaceId, setWorkspaceId] = useState("all");
   const [inboxView, setInboxView] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -95,7 +100,7 @@ export default function InboxScreen({ T, isMobile }) {
   const [mobilePane, setMobilePane] = useState("thread");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const endRef = useRef(null);
-  const ticketsBarRef = useRef(null);
+  const addTabRef = useRef(null);
 
   const persistNav = useCallback((v) => {
     setNavOpen(v);
@@ -108,6 +113,20 @@ export default function InboxScreen({ T, isMobile }) {
     try {
       localStorage.setItem(LS_DETAIL, v ? "1" : "0");
     } catch { /* ignore */ }
+  }, []);
+
+  const addTicketTab = useCallback((threadId) => {
+    setOpenTabIds((ids) => (ids.includes(threadId) ? ids : [...ids, threadId]));
+    setActiveThreadId(threadId);
+    setAddTabMenuOpen(false);
+  }, []);
+
+  const removeTicketTab = useCallback((threadId, e) => {
+    e?.stopPropagation?.();
+    setOpenTabIds((ids) => {
+      if (ids.length <= 1) return ids;
+      return ids.filter((id) => id !== threadId);
+    });
   }, []);
 
   const filteredThreads = useMemo(() => {
@@ -151,11 +170,26 @@ export default function InboxScreen({ T, isMobile }) {
     return pills;
   }, [statusFilter, channelFilter, assigneeFilter, inboxView, sortKey]);
 
+  const ticketsAvailableToAdd = useMemo(
+    () => filteredThreads.filter((t) => !openTabIds.includes(t.id)),
+    [filteredThreads, openTabIds]
+  );
+
   useEffect(() => {
     if (!filteredThreads.some((t) => t.id === activeThreadId)) {
       setActiveThreadId(filteredThreads[0]?.id ?? "");
     }
   }, [filteredThreads, activeThreadId]);
+
+  useEffect(() => {
+    if (openTabIds.length === 0 && INBOX_THREADS[0]?.id) {
+      setOpenTabIds([INBOX_THREADS[0].id]);
+      return;
+    }
+    if (!openTabIds.includes(activeThreadId) && openTabIds.length) {
+      setActiveThreadId(openTabIds[0]);
+    }
+  }, [openTabIds, activeThreadId]);
 
   const thread = INBOX_THREADS.find((t) => t.id === activeThreadId);
   const activeAgent = thread?.agentId;
@@ -167,13 +201,13 @@ export default function InboxScreen({ T, isMobile }) {
 
   useEffect(() => {
     function onDocDown(e) {
-      if (!ticketsOpen) return;
-      const el = ticketsBarRef.current;
-      if (el && !el.contains(e.target)) setTicketsOpen(false);
+      if (!addTabMenuOpen) return;
+      const el = addTabRef.current;
+      if (el && !el.contains(e.target)) setAddTabMenuOpen(false);
     }
     document.addEventListener("mousedown", onDocDown);
     return () => document.removeEventListener("mousedown", onDocDown);
-  }, [ticketsOpen]);
+  }, [addTabMenuOpen]);
 
   useEffect(() => {
     if (isMobile && !thread && mobilePane === "detail") {
@@ -384,17 +418,22 @@ export default function InboxScreen({ T, isMobile }) {
         ["web", "Web"],
       ].map(([id, lab]) => {
         const on = channelFilter === id;
+        const iconColor = on ? T.accent : T.t3;
         return (
           <button
             key={id}
             type="button"
             title={lab}
-            onClick={() => setChannelFilter(id)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setChannelFilter(id);
+            }}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              padding: navOpen ? "6px 10px" : "7px 6px",
+              gap: navOpen ? 8 : 0,
+              padding: navOpen ? "6px 10px" : "8px 6px",
               marginBottom: 2,
               justifyContent: navOpen ? "flex-start" : "center",
               borderRadius: 8,
@@ -406,14 +445,28 @@ export default function InboxScreen({ T, isMobile }) {
               fontWeight: on ? 600 : 500,
               background: on ? T.accentBg : "transparent",
               width: "100%",
+              minHeight: 34,
+              boxSizing: "border-box",
+              flexShrink: 0,
             }}
           >
-            {id === "all" && !navOpen && <LayoutGrid size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
-            {id === "email" && <Mail size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
-            {id === "slack" && <GitBranch size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
-            {id === "web" && <Plug size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
-            {id === "all" && navOpen && <span>All channels</span>}
-            {id !== "all" && navOpen && <span>{lab}</span>}
+            <span
+              aria-hidden
+              style={{
+                width: 22,
+                height: 22,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {id === "all" && <List size={15} strokeWidth={SW} color={iconColor} />}
+              {id === "email" && <Mail size={15} strokeWidth={SW} color={iconColor} />}
+              {id === "slack" && <Activity size={15} strokeWidth={SW} color={iconColor} />}
+              {id === "web" && <ExternalLink size={15} strokeWidth={SW} color={iconColor} />}
+            </span>
+            {navOpen && <span style={{ minWidth: 0, textAlign: "left" }}>{id === "all" ? "All channels" : lab}</span>}
           </button>
         );
       })}
@@ -455,191 +508,49 @@ export default function InboxScreen({ T, isMobile }) {
     </>
   );
 
-  const ThreadList = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        flex: 1,
-        minHeight: 0,
-        minWidth: 0,
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ padding: "10px 12px", borderBottom: `1px solid ${T.border}`, flexShrink: 0, background: T.surface }}>
-        <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.t3, display: "flex", pointerEvents: "none" }}>
-            <Search size={14} />
-          </span>
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search tickets & requesters…"
-            style={{
-              width: "100%",
-              boxSizing: "border-box",
-              background: T.raised,
-              border: `1px solid ${T.border}`,
-              borderRadius: 8,
-              color: T.t1,
-              padding: "8px 10px 8px 32px",
-              fontSize: 13,
-              outline: "none",
-              fontFamily: F.sans,
-            }}
-          />
-        </div>
-      </div>
-      <div style={{ padding: "8px 12px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", background: T.canvas }}>
-          {filterPills.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              onClick={p.clear}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 10px",
-                borderRadius: 99,
-                border: `1px solid ${T.border}`,
-                background: T.surface,
-                color: T.t2,
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: F.sans,
-              }}
-            >
-              {p.label}
-              <span style={{ color: T.t4, fontSize: 12 }}>×</span>
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setSortKey((k) => (k === "newest" ? "oldest" : "newest"))}
-            style={{
-              marginLeft: "auto",
-              padding: "4px 8px",
-              borderRadius: 6,
-              border: `1px solid ${T.borderMuted ?? T.border}`,
-              background: "transparent",
-              color: T.t3,
-              fontSize: 11,
-              cursor: "pointer",
-              fontFamily: F.sans,
-            }}
-          >
-            Sort · {sortKey}
-          </button>
-      </div>
-      <div
+  const FilterPillsBar = (
+    <div style={{ padding: "6px 0 8px", display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+      {filterPills.map((p) => (
+        <button
+          key={p.key}
+          type="button"
+          onClick={p.clear}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 10px",
+            borderRadius: 99,
+            border: `1px solid ${T.border}`,
+            background: T.surface,
+            color: T.t2,
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: "pointer",
+            fontFamily: F.sans,
+          }}
+        >
+          {p.label}
+          <span style={{ color: T.t4, fontSize: 12 }}>×</span>
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={() => setSortKey((k) => (k === "newest" ? "oldest" : "newest"))}
         style={{
-          flex: 1,
-          minHeight: 0,
-          minWidth: 0,
-          overflowX: "hidden",
-          overflowY: "auto",
-          WebkitOverflowScrolling: "touch",
-          background: T.surface,
+          marginLeft: "auto",
+          padding: "4px 8px",
+          borderRadius: 6,
+          border: `1px solid ${T.borderMuted ?? T.border}`,
+          background: "transparent",
+          color: T.t3,
+          fontSize: 11,
+          cursor: "pointer",
+          fontFamily: F.sans,
         }}
       >
-        {filteredThreads.length === 0 && (
-          <div style={{ padding: 24, textAlign: "center", color: T.t3, fontSize: 13 }}>No tickets match filters</div>
-        )}
-        {filteredThreads.map((th) => {
-          const ag = DB.agents.find((a) => a.id === th.agentId);
-          const active = activeThreadId === th.id;
-          const lastMsg = (chats[th.agentId] || []).slice(-1)[0];
-          return (
-            <div
-              key={th.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                setActiveThreadId(th.id);
-                setTicketsOpen(false);
-                if (isMobile) setMobilePane("thread");
-              }}
-              onKeyDown={(e) => e.key === "Enter" && setActiveThreadId(th.id)}
-              style={{
-                padding: "11px 12px",
-                borderBottom: `1px solid ${T.border}`,
-                cursor: "pointer",
-                background: active ? T.accentBg : "transparent",
-                borderLeft: active ? `3px solid ${T.accent}` : "3px solid transparent",
-                transition: "background .12s",
-              }}
-            >
-              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <div style={{ position: "relative", flexShrink: 0 }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      background: T.raised,
-                      border: `1px solid ${T.border}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: T.t2,
-                    }}
-                  >
-                    <Bot size={17} />
-                  </div>
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: -1,
-                      right: -1,
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: sc[ag?.status] ?? T.t3,
-                      border: `2px solid ${T.surface}`,
-                    }}
-                  />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: T.t2, fontFamily: F.mono }}>{th.ticketId}</span>
-                      <span style={{ fontSize: 10, color: T.t4, flexShrink: 0 }}>{th.updated}</span>
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: T.t1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{th.subject}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
-                      <Badge T={T} color={statusColor(T, th.status)}>{th.status.replace("_", " ")}</Badge>
-                      <span style={{ fontSize: 11, color: T.t3 }}>{th.channel}</span>
-                      <span style={{ fontSize: 11, color: T.t4 }}>· {th.requester}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                      <span style={{ fontSize: 12, color: T.t3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {lastMsg?.content?.slice(0, 52) || ag?.role}…
-                      </span>
-                      {th.unread > 0 && !active && (
-                        <span
-                          style={{
-                            background: T.accent,
-                            color: "#fff",
-                            borderRadius: 99,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            padding: "1px 7px",
-                            flexShrink: 0,
-                            minWidth: 18,
-                            textAlign: "center",
-                          }}
-                        >
-                          {th.unread}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+        Sort · {sortKey}
+      </button>
     </div>
   );
 
@@ -1026,7 +937,14 @@ export default function InboxScreen({ T, isMobile }) {
               <PanelLeft size={14} /> Views
             </Btn>
           )}
-          <Btn T={T} variant="primary">
+          <Btn
+            T={T}
+            variant="primary"
+            onClick={() => {
+              const next = ticketsAvailableToAdd[0] ?? INBOX_THREADS.find((t) => !openTabIds.includes(t.id));
+              if (next) addTicketTab(next.id);
+            }}
+          >
             <Edit2 size={14} /> New ticket
           </Btn>
         </div>
@@ -1036,125 +954,236 @@ export default function InboxScreen({ T, isMobile }) {
         <SubNav T={T} tabs={inboxSubTabs} active={subTab} onChange={setSubTab} />
       </div>
 
-      <div ref={ticketsBarRef} style={{ flexShrink: 0, marginTop: 10, position: "relative", zIndex: 25 }}>
+      <div style={{ flex: 1, minHeight: 0, marginTop: 10, display: "flex", flexDirection: "column", position: "relative", zIndex: 25 }}>
         <div
           style={{
+            flex: 1,
+            minHeight: 0,
             display: "flex",
-            alignItems: "center",
-            gap: 8,
-            flexWrap: "wrap",
-            padding: "10px 4px 12px",
-            background: T.raised,
-            border: `1px solid ${T.borderMuted ?? T.border}`,
+            flexDirection: "column",
+            border: `1px solid ${T.border}`,
             borderRadius: 12,
+            overflow: "hidden",
+            background: T.surface,
+            boxShadow: T.shadow,
           }}
         >
-          <button
-            type="button"
-            onClick={() => setTicketsOpen((o) => !o)}
-            style={{
-              padding: "6px 14px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: ticketsOpen ? T.accentBg : "transparent",
-              border: ticketsOpen ? `1px solid ${T.accentBorder}` : "1px solid transparent",
-              borderRadius: 9999,
-              color: ticketsOpen ? T.accent : T.t2,
-              fontSize: 14,
-              fontWeight: ticketsOpen ? 600 : 500,
-              cursor: "pointer",
-              fontFamily: F.sans,
-              transition: "all .12s",
-              maxWidth: "100%",
-            }}
-          >
-            <Inbox size={16} strokeWidth={SW} />
-            <span style={{ whiteSpace: "nowrap" }}>Tickets</span>
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                fontVariantNumeric: "tabular-nums",
-                background: T.surface,
-                border: `1px solid ${T.border}`,
-                borderRadius: 99,
-                padding: "1px 8px",
-                color: T.t2,
-              }}
-            >
-              {filteredThreads.length}
-            </span>
-            {thread && (
+          <div style={{ flexShrink: 0, padding: "10px 12px 12px", background: T.raised, borderBottom: `1px solid ${T.borderMuted ?? T.border}` }}>
+            <div style={{ position: "relative", marginBottom: 10 }}>
               <span
                 style={{
-                  fontSize: 12,
+                  position: "absolute",
+                  left: 14,
+                  top: "50%",
+                  transform: "translateY(-50%)",
                   color: T.t3,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  maxWidth: isMobile ? 140 : 280,
-                  fontFamily: F.mono,
+                  display: "flex",
+                  pointerEvents: "none",
+                  opacity: 0.85,
                 }}
               >
-                {thread.ticketId} · {thread.subject}
+                <Search size={15} strokeWidth={SW} />
               </span>
-            )}
-            <ChevronDown
-              size={16}
-              strokeWidth={SW}
-              color={T.t3}
-              style={{
-                transform: ticketsOpen ? "rotate(180deg)" : "none",
-                transition: "transform .15s ease",
-              }}
-            />
-          </button>
-        </div>
-        {ticketsOpen && (
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tickets, IDs, or requesters…"
+                aria-label="Ticket search"
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  background: T.surface,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 9999,
+                  color: T.t1,
+                  padding: "10px 16px 10px 40px",
+                  fontSize: 13,
+                  outline: "none",
+                  fontFamily: F.mono,
+                  boxShadow: `inset 0 1px 2px rgba(15, 23, 42, 0.04)`,
+                  transition: `border-color 0.2s ${ATLAS_EASE}, box-shadow 0.2s ${ATLAS_EASE}`,
+                }}
+              />
+            </div>
+            {FilterPillsBar}
+          </div>
+
           <div
             style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              top: "100%",
-              marginTop: 8,
-              borderRadius: 12,
-              border: `1px solid ${T.borderMuted ?? T.border}`,
-              background: T.surface,
-              boxShadow: T.shadowMd ?? T.shadowLg,
-              overflow: "hidden",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "flex-end",
+              gap: 2,
+              padding: "0 6px",
+              overflowX: "auto",
+              background: T.raised,
+              borderBottom: `1px solid ${T.borderMuted ?? T.border}`,
+              scrollbarWidth: "thin",
+              WebkitOverflowScrolling: "touch",
+              position: "relative",
+              zIndex: 4,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                maxHeight: isMobile ? "min(65vh, 520px)" : 420,
-                minHeight: 200,
-              }}
-            >
-              {ThreadList}
+            {openTabIds.map((tid) => {
+              const th = INBOX_THREADS.find((t) => t.id === tid);
+              if (!th) return null;
+              const active = activeThreadId === tid;
+              return (
+                <button
+                  key={tid}
+                  type="button"
+                  onClick={() => setActiveThreadId(tid)}
+                  style={{
+                    flex: "0 0 auto",
+                    maxWidth: active ? 280 : 132,
+                    minWidth: 76,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "9px 10px 10px",
+                    borderRadius: "10px 10px 0 0",
+                    border: active ? `1px solid ${T.borderMuted ?? T.border}` : "1px solid transparent",
+                    borderBottom: active ? `1px solid ${T.surface}` : "1px solid transparent",
+                    marginBottom: -1,
+                    background: active ? T.surface : "transparent",
+                    color: active ? T.t1 : T.t3,
+                    fontSize: 12,
+                    fontWeight: active ? 600 : 500,
+                    cursor: "pointer",
+                    fontFamily: F.sans,
+                    transition: `max-width 0.28s ${ATLAS_EASE}, background 0.2s ${ATLAS_EASE}, color 0.2s`,
+                    position: "relative",
+                    zIndex: active ? 3 : 1,
+                  }}
+                >
+                  <span style={{ fontFamily: F.mono, fontSize: 11, flexShrink: 0, color: active ? T.accent : T.t4 }}>{th.ticketId}</span>
+                  <span
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      textAlign: "left",
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
+                    {th.subject}
+                  </span>
+                  <span
+                    role="presentation"
+                    title="Close tab"
+                    onClick={(e) => removeTicketTab(tid, e)}
+                    style={{
+                      flexShrink: 0,
+                      width: 22,
+                      height: 22,
+                      borderRadius: 6,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                      lineHeight: 1,
+                      color: T.t4,
+                      cursor: "pointer",
+                      transition: `background 0.15s ${ATLAS_EASE}, color 0.15s`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = T.hover;
+                      e.currentTarget.style.color = T.t1;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = T.t4;
+                    }}
+                  >
+                    ×
+                  </span>
+                </button>
+              );
+            })}
+            <div ref={addTabRef} style={{ position: "relative", flex: "0 0 auto", alignSelf: "flex-end", marginBottom: 5 }}>
+              <button
+                type="button"
+                title="Add ticket tab"
+                onClick={() => setAddTabMenuOpen((o) => !o)}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 8,
+                  border: `1px dashed ${T.border}`,
+                  background: T.surface,
+                  color: T.t2,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: `background 0.2s ${ATLAS_EASE}`,
+                }}
+              >
+                <Plus size={17} strokeWidth={SW} />
+              </button>
+              {addTabMenuOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    marginTop: 8,
+                    width: isMobile ? "min(calc(100vw - 48px), 340px)" : 320,
+                    maxHeight: 280,
+                    overflowY: "auto",
+                    borderRadius: 12,
+                    border: `1px solid ${T.borderMuted ?? T.border}`,
+                    background: T.surface,
+                    boxShadow: T.shadowMd ?? T.shadowLg,
+                    zIndex: 50,
+                  }}
+                >
+                  {ticketsAvailableToAdd.length === 0 && (
+                    <div style={{ padding: 16, fontSize: 13, color: T.t3, textAlign: "center" }}>All matching tickets are open as tabs</div>
+                  )}
+                  {ticketsAvailableToAdd.map((th) => (
+                    <button
+                      key={th.id}
+                      type="button"
+                      onClick={() => addTicketTab(th.id)}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "10px 14px",
+                        border: "none",
+                        borderBottom: `1px solid ${T.borderMuted ?? T.border}`,
+                        background: "none",
+                        cursor: "pointer",
+                        fontFamily: F.sans,
+                        fontSize: 13,
+                        color: T.t1,
+                        transition: `background 0.15s ${ATLAS_EASE}`,
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = T.hover)}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                    >
+                      <div style={{ fontFamily: F.mono, fontSize: 11, color: T.accent, marginBottom: 2 }}>{th.ticketId}</div>
+                      <div style={{ fontWeight: 600 }}>{th.subject}</div>
+                      <div style={{ fontSize: 11, color: T.t3, marginTop: 2 }}>{th.requester}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </div>
 
-      <div
-        style={{
-          marginTop: 16,
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          gap: 0,
-          border: `1px solid ${T.border}`,
-          borderRadius: 12,
-          overflow: "hidden",
-          background: T.surface,
-          boxShadow: T.shadow,
-          flexDirection: isMobile ? "column" : "row",
-        }}
-      >
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: "flex",
+              gap: 0,
+              overflow: "hidden",
+              background: T.surface,
+              flexDirection: isMobile ? "column" : "row",
+            }}
+          >
         {/* Left nav rail */}
         {!isMobile && (
           <aside
@@ -1182,24 +1211,18 @@ export default function InboxScreen({ T, isMobile }) {
                 padding: navOpen ? "10px 10px 10px 12px" : "10px 8px",
                 borderBottom: navOpen ? `1px solid ${T.borderMuted ?? T.border}` : "none",
                 flexShrink: 0,
-                flexDirection: navOpen ? "row" : "column",
-                gap: navOpen ? 0 : 8,
+                flexDirection: "row",
+                gap: 8,
+                minHeight: 44,
+                boxSizing: "border-box",
               }}
             >
               {navOpen && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                  <PanelLeft size={17} strokeWidth={SW} color={T.t2} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: T.t1 }}>Views</span>
-                </div>
-              )}
-              {!navOpen && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }} title="Views — workspace, inbox, status, channels, team">
-                  <LayoutGrid size={20} strokeWidth={SW} color={T.accent} />
-                </div>
+                <span style={{ fontSize: 13, fontWeight: 600, color: T.t1, minWidth: 0 }}>Views</span>
               )}
               <button
                 type="button"
-                title={navOpen ? "Collapse views" : "Expand views"}
+                title={navOpen ? "Collapse views" : "Expand views — workspace, inbox, status, channels, team"}
                 onClick={() => persistNav(!navOpen)}
                 style={{
                   border: "none",
@@ -1211,6 +1234,8 @@ export default function InboxScreen({ T, isMobile }) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  marginLeft: navOpen ? undefined : "auto",
+                  marginRight: navOpen ? undefined : "auto",
                 }}
               >
                 {navOpen ? <ChevronLeft size={18} strokeWidth={SW} /> : <ChevronRight size={18} strokeWidth={SW} />}
@@ -1318,6 +1343,8 @@ export default function InboxScreen({ T, isMobile }) {
             {DetailPanel}
           </aside>
         )}
+          </div>
+        </div>
       </div>
 
       <SlideOver T={T} open={filtersOpen} onClose={() => setFiltersOpen(false)} title="Views & filters" subtitle="Workspace, inbox, status, channels">

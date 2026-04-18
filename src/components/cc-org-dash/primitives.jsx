@@ -434,14 +434,16 @@ export function Table({
   );
 }
 
-export function SlideOver({ open, onClose, title, subtitle, children, T, width = 420 }) {
+export function SlideOver({ open, onClose, title, subtitle, children, T, width = 420, topOffsetPx }) {
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
   const effectiveWidth = isMobile ? Math.min(window.innerWidth - 32, width) : width;
+  /** Clear GitHub-style top nav + primary tabs so the panel header is not hidden behind the shell */
+  const top = topOffsetPx !== undefined ? topOffsetPx : (isMobile ? 100 : 116);
   return (
     <>
       {open && <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", zIndex: 200 }} />}
       <div style={{
-        position: "fixed", top: 0, right: 0, bottom: 0, width: effectiveWidth, maxWidth: "100vw",
+        position: "fixed", top, right: 0, bottom: 0, width: effectiveWidth, maxWidth: "100vw",
         background: T.surface, borderLeft: `1px solid ${T.border}`,
         zIndex: 201, transform: open ? "translateX(0)" : "translateX(100%)",
         transition: "transform 0.25s cubic-bezier(.4,0,.2,1)",
@@ -631,7 +633,12 @@ export function SubNav({ T, tabs, active, onChange }) {
         display: "flex",
         alignItems: "center",
         gap: 8,
-        flexWrap: "wrap",
+        flexWrap: "nowrap",
+        overflowX: "auto",
+        overflowY: "hidden",
+        WebkitOverflowScrolling: "touch",
+        scrollbarWidth: "thin",
+        minWidth: 0,
         padding: "10px 4px 12px",
         marginBottom: 4,
         background: T.raised,

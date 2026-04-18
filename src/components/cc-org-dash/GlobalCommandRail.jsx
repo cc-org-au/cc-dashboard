@@ -2,10 +2,7 @@ import { useState } from "react";
 import { F } from "./primitives";
 import { GLOBAL_COMMAND } from "./data";
 import {
-  PanelLeft,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Zap,
   CircleDot,
   Target,
@@ -64,50 +61,6 @@ export default function GlobalCommandRail({ T, isOpen, onToggle, onSelectDetail,
         maxHeight: isMobile ? "min(48vh, 420px)" : "none",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: isOpen ? "space-between" : "center",
-          padding: isOpen ? "10px 8px 10px 12px" : "12px 6px",
-          borderBottom: isOpen ? `1px solid ${T.borderMuted ?? T.border}` : "none",
-          flexShrink: 0,
-        }}
-      >
-        {isOpen && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-            <PanelLeft size={17} strokeWidth={SW} color={T.t2} />
-            <div style={{ minWidth: 0 }}>
-              <div style={{ color: T.t1, fontSize: 12, fontWeight: 700, letterSpacing: "-0.02em" }}>Company command</div>
-              <div style={{ color: T.t4, fontSize: 10, fontWeight: 500, marginTop: 1 }}>Portfolio · ops · risk</div>
-            </div>
-          </div>
-        )}
-        <button
-          type="button"
-          title={isOpen ? "Collapse" : "Expand"}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle();
-          }}
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 8,
-            border: `1px solid ${T.borderMuted ?? T.border}`,
-            background: T.surface,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            color: T.t2,
-            flexShrink: 0,
-          }}
-        >
-          {isOpen ? <ChevronLeft size={18} strokeWidth={SW} /> : <ChevronRight size={18} strokeWidth={SW} />}
-        </button>
-      </div>
-
       {isOpen && (
         <div
           style={{
@@ -115,10 +68,35 @@ export default function GlobalCommandRail({ T, isOpen, onToggle, onSelectDetail,
             minHeight: 0,
             overflowY: "auto",
             WebkitOverflowScrolling: "touch",
-            padding: "8px 8px 14px",
+            padding: "12px 8px 14px",
           }}
         >
-          {label("LIVE SIGNALS")}
+          <div
+            style={{
+              paddingLeft: 10,
+              paddingRight: 8,
+              paddingBottom: 12,
+              marginBottom: 4,
+              borderBottom: `1px solid ${T.borderMuted ?? T.border}`,
+            }}
+          >
+            <div style={{ color: T.t1, fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em", fontFamily: F.sans }}>Company command</div>
+            <div style={{ color: T.t3, fontSize: 11, fontWeight: 500, marginTop: 4 }}>Portfolio · ops · risk</div>
+          </div>
+          <div
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              color: T.t4,
+              marginTop: 8,
+              marginBottom: 6,
+              paddingLeft: 10,
+              paddingRight: 8,
+            }}
+          >
+            LIVE SIGNALS
+          </div>
           <button
             type="button"
             onClick={() => onSelectDetail({ kind: "signals-feed", group: "critical" })}
