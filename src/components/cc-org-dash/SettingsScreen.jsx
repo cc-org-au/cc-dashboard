@@ -1,7 +1,147 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Surface, Btn, Badge, Dot, Avi, Toggle, Modal, Field, Input, Select, Progress, THEMES, F } from "./primitives";
 import { DB } from "./data";
-import { SettingsIcon, Bot, Bell, Lock, CreditCard, Users, Palette, Sun, Moon } from "./icons";
+import {
+  SettingsIcon,
+  Bot,
+  Bell,
+  Lock,
+  CreditCard,
+  Users,
+  Palette,
+  Sun,
+  Moon,
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Zap,
+} from "./icons";
+
+/** Documentation tree + page copy (Zep-style layout, cc-org-dash theme) */
+const DOC_TREE = [
+  {
+    id: "concepts",
+    label: "Key concepts",
+    pages: [
+      { id: "key-concepts", title: "Key concepts" },
+      { id: "workspaces", title: "Workspaces & orgs" },
+    ],
+  },
+  {
+    id: "quickstarts",
+    label: "Quickstarts",
+    pages: [
+      { id: "install", title: "Install & sign-in" },
+      { id: "first-workflow", title: "Your first workflow" },
+    ],
+  },
+  {
+    id: "tools",
+    label: "Developer tools",
+    pages: [
+      { id: "cli", title: "CLI reference" },
+      { id: "webhooks", title: "Webhooks" },
+    ],
+  },
+  {
+    id: "context",
+    label: "Adding context",
+    pages: [
+      { id: "files-ingest", title: "Files & data" },
+      { id: "integrations", title: "Integrations" },
+    ],
+  },
+];
+
+const DOC_PAGES = {
+  "key-concepts": {
+    breadcrumb: "Key concepts",
+    title: "Key concepts",
+    intro:
+      "cc-org-dash is a business command center: dashboards, work tracking, files, integrations, and AI agents share one workspace model. Understanding a few ideas upfront makes the rest of the docs easier to follow.",
+    callout: {
+      text: "Want to ship something today? Start with Install & sign-in, then open Work → Workflows.",
+      hrefPage: "install",
+    },
+    table: [
+      { concept: "Workspace", description: "Top-level container for people, data, and billing. Everything you see in the shell belongs to one workspace.", doc: "Workspaces & orgs" },
+      { concept: "Command center", description: "The left company command rail plus global agent surface — quick navigation and AI without leaving context.", doc: "Your first workflow" },
+      { concept: "Integration", description: "A connected third-party system (CRM, Slack, GitHub) with scoped credentials and sync status.", doc: "Integrations" },
+      { concept: "Workflow", description: "A directed graph of triggers, filters, and actions that automate work across systems.", doc: "Your first workflow" },
+    ],
+  },
+  workspaces: {
+    breadcrumb: "Workspaces & orgs",
+    title: "Workspaces & orgs",
+    intro:
+      "A workspace maps to your organisation in cc-org-dash. Roles, SSO, and API keys are configured at this level; projects and issues live underneath.",
+    callout: { text: "Manage members under Settings → Team.", hrefPage: null },
+    table: [
+      { concept: "Org slug", description: "Used in URLs and API paths; immutable after creation in production.", doc: "CLI reference" },
+      { concept: "Seat", description: "A billable user who can sign in. Guests may be limited to specific apps.", doc: "—" },
+    ],
+  },
+  install: {
+    breadcrumb: "Quickstarts",
+    title: "Install & sign-in",
+    intro: "There is nothing to install for the hosted app: open your workspace URL, sign in with SSO or email, and complete MFA if required.",
+    callout: { text: "Developers can use the REST API with an API key from Settings → Security.", hrefPage: "cli" },
+    table: [
+      { concept: "Browser", description: "Latest Chrome, Firefox, Safari, or Edge.", doc: "—" },
+      { concept: "Session", description: "Sessions respect your org timeout policy; refresh tokens rotate automatically.", doc: "Webhooks" },
+    ],
+  },
+  "first-workflow": {
+    breadcrumb: "Quickstarts",
+    title: "Your first workflow",
+    intro: "Open Work → Workflows, pick a template or create an empty workflow, drag nodes on the canvas, and connect edges. Save runs a validation pass.",
+    callout: null,
+    table: [
+      { concept: "Node", description: "Trigger, filter, action, or AI step with typed inputs.", doc: "Key concepts" },
+      { concept: "Run", description: "A single execution of the graph with trace logs.", doc: "—" },
+    ],
+  },
+  cli: {
+    breadcrumb: "Developer tools",
+    title: "CLI reference",
+    intro: "The cc-org-dash CLI (demo) wraps common tasks: token rotation, schema export, and workflow bundles.",
+    callout: { text: "Prefer HTTP? See Webhooks for event delivery.", hrefPage: "webhooks" },
+    table: [
+      { concept: "eco login", description: "Device flow against your workspace.", doc: "Install & sign-in" },
+      { concept: "eco workflows push", description: "Upload a workflow JSON bundle.", doc: "Your first workflow" },
+    ],
+  },
+  webhooks: {
+    breadcrumb: "Developer tools",
+    title: "Webhooks",
+    intro: "Subscribe to workspace events with signed payloads. Retries use exponential backoff; dead-letter queue is available on Enterprise.",
+    callout: null,
+    table: [
+      { concept: "Signature", description: "HMAC-SHA256 with a workspace secret.", doc: "—" },
+      { concept: "Delivery", description: "At-least-once; consumers must be idempotent.", doc: "CLI reference" },
+    ],
+  },
+  "files-ingest": {
+    breadcrumb: "Adding context",
+    title: "Files & data",
+    intro: "Upload files under Files, or connect a warehouse under Data. Access is governed by folder ACLs and row-level rules where enabled.",
+    callout: null,
+    table: [
+      { concept: "Folder ACL", description: "Inherit or override from parent; audit log records changes.", doc: "—" },
+      { concept: "Sync job", description: "Scheduled or manual pull from a connector.", doc: "Integrations" },
+    ],
+  },
+  integrations: {
+    breadcrumb: "Adding context",
+    title: "Integrations",
+    intro: "Browse Integrations to connect CRM, chat, code, and observability tools. Marketplace installs provision secrets automatically on Vercel-compatible setups.",
+    callout: { text: "Check sync status in the status bar at the bottom of the shell.", hrefPage: "key-concepts" },
+    table: [
+      { concept: "Connector", description: "Configuration + credentials for one vendor.", doc: "Webhooks" },
+      { concept: "Health", description: "Green / degraded / disconnected from last successful sync.", doc: "—" },
+    ],
+  },
+};
 
 export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
   const [tab, setTab] = useState("general");
@@ -9,6 +149,29 @@ export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
   const [saved, setSaved] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState(false);
   const [toggles, setToggles] = useState({ critical: true, warning: true, billing: false, digest: true, deployments: false });
+  const [docSuite, setDocSuite] = useState("documentation");
+  const [activeDocPage, setActiveDocPage] = useState("key-concepts");
+  const [openDocGroups, setOpenDocGroups] = useState(() => new Set(DOC_TREE.map((g) => g.id)));
+
+  const docBody = DOC_PAGES[activeDocPage] ?? DOC_PAGES["key-concepts"];
+
+  const toggleDocGroup = (gid) => {
+    setOpenDocGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(gid)) next.delete(gid);
+      else next.add(gid);
+      return next;
+    });
+  };
+
+  const docSuiteTabs = useMemo(
+    () => [
+      { id: "documentation", label: "Documentation" },
+      { id: "api", label: "API reference" },
+      { id: "changelog", label: "Changelog" },
+    ],
+    []
+  );
 
   const save = () => { localStorage.setItem("openai_key", openAIKey); setSaved(true); setTimeout(() => setSaved(false), 2000); };
 
@@ -20,6 +183,7 @@ export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
     { id: "billing",        label: "Plan & Billing", icon: <CreditCard size={16} /> },
     { id: "team",           label: "Team",           icon: <Users size={16} /> },
     { id: "appearance",     label: "Appearance",     icon: <Palette size={16} /> },
+    { id: "docs",           label: "Docs",           icon: <BookOpen size={16} /> },
   ];
 
   const plans = [
@@ -60,9 +224,304 @@ export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 style={{ margin: 0, paddingBottom: 16, marginBottom: 20, borderBottom: `1px solid ${T.border}`, color: T.t1, fontSize: 20, fontWeight: 600 }}>
-            {settingsTabs.find(s => s.id === tab)?.label}
-          </h2>
+          {tab !== "docs" && (
+            <h2 style={{ margin: 0, paddingBottom: 16, marginBottom: 20, borderBottom: `1px solid ${T.border}`, color: T.t1, fontSize: 20, fontWeight: 600 }}>
+              {settingsTabs.find((s) => s.id === tab)?.label}
+            </h2>
+          )}
+
+          {tab === "docs" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 0, width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 4,
+                  borderBottom: `1px solid ${T.border}`,
+                  marginBottom: isMobile ? 14 : 18,
+                  paddingBottom: 2,
+                }}
+              >
+                {docSuiteTabs.map((dt) => {
+                  const on = docSuite === dt.id;
+                  return (
+                    <button
+                      key={dt.id}
+                      type="button"
+                      onClick={() => setDocSuite(dt.id)}
+                      style={{
+                        padding: "8px 14px 10px",
+                        background: "none",
+                        border: "none",
+                        borderBottom: on ? `2px solid ${T.accent}` : "2px solid transparent",
+                        color: on ? T.accent : T.t3,
+                        fontSize: 14,
+                        fontWeight: on ? 600 : 500,
+                        cursor: "pointer",
+                        fontFamily: F.sans,
+                        marginBottom: -2,
+                      }}
+                    >
+                      {dt.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {docSuite === "documentation" && (
+                <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 16 : 22, alignItems: "flex-start" }}>
+                  <nav
+                    style={{
+                      width: isMobile ? "100%" : 268,
+                      flexShrink: 0,
+                      border: `1px solid ${T.border}`,
+                      borderRadius: 8,
+                      background: T.surface,
+                      overflow: "hidden",
+                      alignSelf: "stretch",
+                    }}
+                  >
+                    {DOC_TREE.map((group) => {
+                      const expanded = openDocGroups.has(group.id);
+                      return (
+                        <div key={group.id} style={{ borderBottom: `1px solid ${T.borderMuted ?? T.border}` }}>
+                          <button
+                            type="button"
+                            onClick={() => toggleDocGroup(group.id)}
+                            style={{
+                              width: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              padding: "10px 12px",
+                              background: T.raised,
+                              border: "none",
+                              cursor: "pointer",
+                              fontFamily: F.sans,
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: T.t1,
+                              textAlign: "left",
+                            }}
+                          >
+                            <span style={{ display: "flex", color: T.t3 }}>
+                              {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                            </span>
+                            {group.label}
+                          </button>
+                          {expanded && (
+                            <div style={{ padding: "4px 8px 10px" }}>
+                              {group.pages.map((p) => {
+                                const sel = activeDocPage === p.id;
+                                return (
+                                  <button
+                                    key={p.id}
+                                    type="button"
+                                    onClick={() => setActiveDocPage(p.id)}
+                                    style={{
+                                      width: "100%",
+                                      textAlign: "left",
+                                      padding: "7px 10px 7px 14px",
+                                      marginBottom: 2,
+                                      borderRadius: 6,
+                                      border: "none",
+                                      cursor: "pointer",
+                                      fontFamily: F.sans,
+                                      fontSize: 13,
+                                      fontWeight: sel ? 600 : 400,
+                                      color: sel ? T.accent : T.t2,
+                                      background: sel ? T.accentBg : "transparent",
+                                    }}
+                                  >
+                                    {p.title}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </nav>
+
+                  <article style={{ flex: 1, minWidth: 0, maxWidth: 800 }}>
+                    <div style={{ color: T.accent, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>
+                      {docBody.breadcrumb}
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+                      <h3 style={{ margin: 0, color: T.t1, fontSize: isMobile ? 24 : 28, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                        {docBody.title}
+                      </h3>
+                      <Btn T={T} variant="default" small>
+                        Copy page <ChevronDown size={14} />
+                      </Btn>
+                    </div>
+                    <p style={{ color: T.t2, fontSize: 15, lineHeight: 1.65, margin: "0 0 18px" }}>{docBody.intro}</p>
+
+                    {docBody.callout && (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 12,
+                          alignItems: "flex-start",
+                          padding: "14px 16px",
+                          borderRadius: 8,
+                          border: `1px solid ${T.accentBorder}`,
+                          background: T.accentBg,
+                          marginBottom: 22,
+                        }}
+                      >
+                        <span style={{ fontSize: 18, lineHeight: 1 }} aria-hidden>
+                          ★
+                        </span>
+                        <div style={{ color: T.t1, fontSize: 14, lineHeight: 1.55 }}>
+                          {docBody.callout.text}
+                          {docBody.callout.hrefPage && (
+                            <>
+                              {" "}
+                              <button
+                                type="button"
+                                onClick={() => setActiveDocPage(docBody.callout.hrefPage)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  padding: 0,
+                                  color: T.accent,
+                                  fontWeight: 600,
+                                  cursor: "pointer",
+                                  fontFamily: F.sans,
+                                  textDecoration: "underline",
+                                }}
+                              >
+                                Open
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ border: `1px solid ${T.border}`, borderRadius: 8, overflow: "hidden", background: T.surface }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "minmax(120px,1fr) minmax(200px,2fr) minmax(100px,0.8fr)",
+                          gap: 0,
+                          padding: "10px 14px",
+                          background: T.raised,
+                          borderBottom: `1px solid ${T.border}`,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: T.t2,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        <span>Concept</span>
+                        <span>Description</span>
+                        <span>Docs</span>
+                      </div>
+                      {docBody.table.map((row, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "minmax(120px,1fr) minmax(200px,2fr) minmax(100px,0.8fr)",
+                            gap: 0,
+                            padding: "12px 14px",
+                            borderBottom: i < docBody.table.length - 1 ? `1px solid ${T.borderMuted ?? T.border}` : "none",
+                            fontSize: 14,
+                            alignItems: "start",
+                          }}
+                        >
+                          <span style={{ color: T.t1, fontWeight: 600 }}>{row.concept}</span>
+                          <span style={{ color: T.t2, lineHeight: 1.5 }}>{row.description}</span>
+                          <span>
+                            {row.doc !== "—" ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const match = Object.entries(DOC_PAGES).find(([, v]) => v.title === row.doc);
+                                  if (match) setActiveDocPage(match[0]);
+                                }}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  padding: 0,
+                                  color: T.accent,
+                                  cursor: "pointer",
+                                  fontFamily: F.sans,
+                                  fontSize: 14,
+                                  textDecoration: "underline",
+                                  textAlign: "left",
+                                }}
+                              >
+                                {row.doc}
+                              </button>
+                            ) : (
+                              <span style={{ color: T.t4 }}>—</span>
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                </div>
+              )}
+
+              {docSuite === "api" && (
+                <Surface T={T} style={{ padding: 24 }}>
+                  <div style={{ color: T.t1, fontSize: 16, fontWeight: 600, marginBottom: 8 }}>API reference</div>
+                  <p style={{ color: T.t2, fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+                    OpenAPI 3.1 spec and authenticated examples will live here. Use <span style={{ fontFamily: F.mono, color: T.t1 }}>Settings → Security</span> to issue API keys.
+                  </p>
+                </Surface>
+              )}
+
+              {docSuite === "changelog" && (
+                <Surface T={T} style={{ padding: 24 }}>
+                  <div style={{ color: T.t1, fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Changelog</div>
+                  {[
+                    { v: "0.4.0", date: "Apr 2026", notes: "Company command rail, workflow canvas, Linear-style work views." },
+                    { v: "0.3.0", date: "Mar 2026", notes: "Files refresh, integrations hub, dark theme polish." },
+                  ].map((row) => (
+                    <div key={row.v} style={{ padding: "12px 0", borderBottom: `1px solid ${T.border}` }}>
+                      <div style={{ fontFamily: F.mono, fontSize: 13, fontWeight: 600, color: T.accent }}>{row.v}</div>
+                      <div style={{ color: T.t3, fontSize: 12, marginBottom: 4 }}>{row.date}</div>
+                      <div style={{ color: T.t2, fontSize: 14 }}>{row.notes}</div>
+                    </div>
+                  ))}
+                </Surface>
+              )}
+
+              <button
+                type="button"
+                title="Ask AI (demo)"
+                style={{
+                  position: "fixed",
+                  right: isMobile ? 16 : 28,
+                  bottom: 72,
+                  zIndex: 55,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 16px",
+                  borderRadius: 999,
+                  border: `1px solid ${T.accentBorder}`,
+                  background: T.accentBg,
+                  color: T.accent,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: F.sans,
+                  boxShadow: T.shadowMd,
+                }}
+              >
+                <Zap size={16} />
+                Ask AI
+              </button>
+            </div>
+          )}
 
           {tab === "general" && (
             <div style={{ maxWidth: 520 }}>

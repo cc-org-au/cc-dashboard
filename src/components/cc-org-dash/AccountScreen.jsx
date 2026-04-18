@@ -1,174 +1,549 @@
-import { useState } from "react";
-import { Surface, Btn, Badge, Toggle, Modal, Field, Input, Select, F } from "./primitives";
-import { CheckCircle2, ArrowUp, Plus, CircleDot, GitBranch, LogIn } from "./icons";
+import { useState, useEffect, useMemo } from "react";
+import { Surface, Btn, Badge, Toggle, Modal, Field, Input, Select, Avi, F } from "./primitives";
+import {
+  User,
+  Palette,
+  ExternalLink,
+  Shield,
+  Bell,
+  Trash2,
+  Upload,
+  Clock,
+  SettingsIcon,
+} from "./icons";
+
+/** Small label hint (Calendly-style “i”) */
+function InfoHint({ T, text }) {
+  return (
+    <span
+      title={text}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 16,
+        height: 16,
+        borderRadius: "50%",
+        border: `1px solid ${T.border}`,
+        color: T.t3,
+        fontSize: 10,
+        fontWeight: 700,
+        cursor: "help",
+        flexShrink: 0,
+        marginLeft: 6,
+        fontFamily: F.sans,
+      }}
+    >
+      i
+    </span>
+  );
+}
+
+function TextArea({ T, rows = 4, defaultValue, placeholder }) {
+  const [focus, setFocus] = useState(false);
+  return (
+    <textarea
+      defaultValue={defaultValue}
+      placeholder={placeholder}
+      rows={rows}
+      onFocus={() => setFocus(true)}
+      onBlur={() => setFocus(false)}
+      style={{
+        background: T.surface,
+        border: `1px solid ${focus ? T.accent : T.border}`,
+        boxShadow: focus ? `0 0 0 3px ${T.accentBg}` : "none",
+        borderRadius: 8,
+        color: T.t1,
+        padding: "10px 12px",
+        fontSize: 14,
+        outline: "none",
+        fontFamily: F.sans,
+        width: "100%",
+        boxSizing: "border-box",
+        resize: "vertical",
+        minHeight: 80,
+        lineHeight: 1.5,
+      }}
+    />
+  );
+}
+
+const NAV_GROUPS = [
+  {
+    label: "General",
+    items: [
+      { id: "profile", label: "Public profile", Icon: User },
+      { id: "branding", label: "Branding", Icon: Palette },
+      { id: "mylink", label: "My link", Icon: ExternalLink },
+    ],
+  },
+  {
+    label: "Contact & access",
+    items: [
+      { id: "phone", label: "Phone number(s)", Icon: SettingsIcon },
+      { id: "login", label: "Login & security", Icon: Shield },
+      { id: "cookies", label: "Cookie settings", Icon: Bell },
+    ],
+  },
+];
 
 export default function AccountScreen({ T, setTab, isMobile }) {
-  const [editOpen, setEditOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("overview");
+  const [activeSection, setActiveSection] = useState("profile");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [nowTick, setNowTick] = useState(0);
 
-  const statItems = [
-    { label: "Tasks completed", value: "284", color: T.green },
-    { label: "Projects led", value: "12", color: T.accent },
-    { label: "AI interactions", value: "1,840", color: T.purple },
-    { label: "Days active", value: "94", color: T.amber },
-  ];
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
 
-  const timeline = [
-    { when: "Just now", event: "Logged in from Sydney, AU", icon: <LogIn size={12} />, color: T.t3 },
-    { when: "2h ago", event: "Approved ISO audit control #47", icon: <CheckCircle2 size={12} />, color: T.green },
-    { when: "Yesterday", event: "Upgraded DataOracle to claude-3.5", icon: <ArrowUp size={12} />, color: T.accent },
-    { when: "Mon", event: "Invited Priya Sharma to Engineering", icon: <Plus size={12} />, color: T.purple },
-    { when: "Sat", event: "Created project: EMEA Expansion", icon: <GitBranch size={12} />, color: T.amber },
-    { when: "Apr 10", event: "Account created", icon: <CircleDot size={12} />, color: T.green },
-  ];
+  const currentTimeLabel = useMemo(() => {
+    void nowTick;
+    try {
+      return new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    } catch {
+      return "—";
+    }
+  }, [nowTick]);
 
-  const sections = [
-    { id: "overview", label: "Overview" },
-    { id: "security", label: "Security" },
-    { id: "preferences", label: "Preferences" },
-  ];
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {/* Hero card */}
-      <Surface T={T} style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ height: 80, background: `linear-gradient(120deg,${T.accent}28,${T.accentBorder})` }} />
-        <div style={{ padding: "0 28px 24px", marginTop: -40 }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "flex-end", gap: 16 }}>
-              <div style={{ width: 80, height: 80, borderRadius: "50%", background: T.accent, border: `4px solid ${T.surface}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 30, fontWeight: 700, boxShadow: T.shadowMd, fontFamily: F.sans }}>E</div>
-              <div style={{ paddingBottom: 4 }}>
-                <div style={{ color: T.t1, fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>EcoAdmin</div>
-                <div style={{ color: T.t2, fontSize: 14 }}>ccdashadmin · admin@cc-org-dash.io</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                  <Badge T={T} color={T.green}>Active</Badge>
-                  <Badge T={T}>Administrator</Badge>
-                  <Badge T={T} color={T.purple}>AI Access</Badge>
-                </div>
-              </div>
-            </div>
-            <Btn T={T} variant="default" onClick={() => setEditOpen(true)}>Edit profile</Btn>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(4,1fr)", gap: 10, marginTop: 20 }}>
-            {statItems.map(s => (
-              <div key={s.label} style={{ textAlign: "center", padding: "13px", background: T.raised, borderRadius: 8, border: `1px solid ${T.border}` }}>
-                <div style={{ color: s.color, fontSize: 21, fontWeight: 700, fontVariantNumeric: "tabular-nums", fontFamily: F.sans }}>{s.value}</div>
-                <div style={{ color: T.t3, fontSize: 11, marginTop: 3, fontWeight: 500 }}>{s.label}</div>
-              </div>
-            ))}
+  const sidebar = (
+    <aside
+      style={{
+        width: isMobile ? "100%" : 260,
+        flexShrink: 0,
+        border: `1px solid ${T.border}`,
+        borderRadius: 8,
+        background: T.surface,
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ padding: "14px 14px 12px", borderBottom: `1px solid ${T.border}`, background: T.raised }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Avi name="EcoAdmin" size={40} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ color: T.t1, fontSize: 14, fontWeight: 600, lineHeight: 1.25 }}>EcoAdmin</div>
+            <div style={{ color: T.t3, fontSize: 11, marginTop: 2 }}>Your workspace account</div>
           </div>
         </div>
-      </Surface>
-
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "192px 1fr 268px", gap: 14, alignItems: "start" }}>
-        <Surface T={T} style={{ padding: "12px 10px", overflow: "hidden" }}>
-          {sections.map(s => (
-            <button key={s.id} type="button" onClick={() => setActiveSection(s.id)}
+      </div>
+      <nav style={{ padding: "10px 0 12px" }}>
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <div
               style={{
-                width: "100%", padding: "8px 14px", background: activeSection === s.id ? T.accentBg : "transparent",
-                border: activeSection === s.id ? `1px solid ${T.accentBorder}` : "1px solid transparent",
-                borderRadius: 999,
-                color: activeSection === s.id ? T.accent : T.t2,
-                fontSize: 13, fontWeight: activeSection === s.id ? 600 : 500,
-                cursor: "pointer", fontFamily: F.sans, textAlign: "left", transition: "all .12s",
-                marginBottom: 8,
+                padding: "8px 14px 6px",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: T.t3,
               }}
-              onMouseEnter={e => activeSection !== s.id && (e.currentTarget.style.background = T.hover)}
-              onMouseLeave={e => activeSection !== s.id && (e.currentTarget.style.background = "transparent")}>
-              {s.label}
-            </button>
-          ))}
-          <div style={{ padding: "14px 16px" }}>
-            <div style={{ color: T.t2, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Quick Links</div>
-            {[["Notifications", "inbox"], ["API Keys", "settings"], ["Team", "people"]].map(([l, t]) => (
-              <button key={l} onClick={() => setTab(t)}
-                style={{ display: "block", width: "100%", textAlign: "left", padding: "5px 0", background: "none", border: "none", color: T.accent, fontSize: 13, cursor: "pointer", fontFamily: F.sans }}
-                onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
-                onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}>
-                {l} →
-              </button>
-            ))}
+            >
+              {group.label}
+            </div>
+            {group.items.map((item) => {
+              const on = activeSection === item.id;
+              const Icon = item.Icon;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveSection(item.id)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "8px 12px 8px 10px",
+                    margin: "0 8px 2px",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontFamily: F.sans,
+                    fontSize: 13,
+                    fontWeight: on ? 600 : 500,
+                    textAlign: "left",
+                    color: on ? T.accent : T.t2,
+                    background: on ? T.accentBg : "transparent",
+                    borderLeft: on ? `3px solid ${T.accent}` : "3px solid transparent",
+                    boxSizing: "border-box",
+                    transition: "background .12s, color .12s",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!on) e.currentTarget.style.background = T.hover;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!on) e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <span style={{ display: "flex", color: on ? T.accent : T.t3 }}>
+                    <Icon size={16} strokeWidth={2} />
+                  </span>
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
-        </Surface>
+        ))}
+        <div style={{ padding: "12px 14px 4px", borderTop: `1px solid ${T.borderMuted ?? T.border}`, marginTop: 6 }}>
+          <button
+            type="button"
+            onClick={() => setTab("settings")}
+            style={{
+              background: "none",
+              border: "none",
+              padding: "6px 0",
+              color: T.accent,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: F.sans,
+            }}
+          >
+            Developer settings →
+          </button>
+        </div>
+      </nav>
+    </aside>
+  );
 
-        <Surface T={T} style={{ padding: "20px 24px", minHeight: 340 }}>
-          {activeSection === "overview" && (
-            <div>
-              <div style={{ color: T.t1, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Profile Details</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-                {[["Full name", "EcoAdmin"], ["Email", "admin@cc-org-dash.io"], ["Role", "Administrator"], ["Organisation", "cc-org-dash Global"], ["Timezone", "Australia/Sydney"], ["Member since", "Jan 15, 2026"]].map(([k, v]) => (
-                  <div key={k}>
-                    <div style={{ color: T.t2, fontSize: 12, fontWeight: 600, marginBottom: 3 }}>{k}</div>
-                    <div style={{ color: T.t1, fontSize: 13, fontWeight: 400 }}>{v}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>
-                <div style={{ color: T.t1, fontSize: 14, fontWeight: 600, marginBottom: 10 }}>Connected Accounts</div>
-                {[["Google Workspace", "Connected", "🔵"], ["GitHub", "Connected", "🐙"], ["Slack", "Not connected", "💬"]].map(([name, status, icon]) => (
-                  <div key={name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
-                    <span style={{ fontSize: 17 }}>{icon}</span>
-                    <span style={{ color: T.t1, fontSize: 13, flex: 1 }}>{name}</span>
-                    <Badge T={T} color={status === "Connected" ? T.green : T.t3}>{status}</Badge>
-                    <Btn T={T} small variant="default">{status === "Connected" ? "Disconnect" : "Connect"}</Btn>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {activeSection === "security" && (
-            <div>
-              <div style={{ color: T.t1, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Security</div>
-              {[{ label: "Two-Factor Authentication", sub: "Enabled via TOTP app", on: true }, { label: "Login notifications", sub: "Email on new device sign-in", on: true }, { label: "API key expiry alerts", sub: "Alert 7 days before expiry", on: false }].map(item => (
-                <div key={item.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 0", borderBottom: `1px solid ${T.border}` }}>
-                  <div>
-                    <div style={{ color: T.t1, fontSize: 13, fontWeight: 500 }}>{item.label}</div>
-                    <div style={{ color: T.t3, fontSize: 12, marginTop: 2 }}>{item.sub}</div>
-                  </div>
-                  <Toggle T={T} on={item.on} onChange={() => { }} />
-                </div>
-              ))}
-              <div style={{ marginTop: 14 }}><Btn T={T} variant="default">Change Password</Btn></div>
-            </div>
-          )}
-          {activeSection === "preferences" && (
-            <div>
-              <div style={{ color: T.t1, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Preferences</div>
-              <Field label="Language" T={T}><Select T={T} style={{ width: "100%" }}><option>English (AU)</option><option>English (US)</option></Select></Field>
-              <Field label="Date format" T={T}><Select T={T} style={{ width: "100%" }}><option>DD/MM/YYYY</option><option>MM/DD/YYYY</option><option>YYYY-MM-DD</option></Select></Field>
-              <Field label="Default landing tab" T={T}><Select T={T} style={{ width: "100%" }}><option>Home</option><option>Work</option><option>Inbox</option></Select></Field>
-            </div>
-          )}
-        </Surface>
+  const sectionTitle = NAV_GROUPS.flatMap((g) => g.items).find((i) => i.id === activeSection)?.label ?? "Account";
 
-        <Surface T={T} style={{ padding: 0, overflow: "hidden" }}>
-          <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, background: T.raised }}>
-            <div style={{ color: T.t1, fontSize: 14, fontWeight: 600 }}>Activity Timeline</div>
-          </div>
-          <div style={{ padding: "8px 0" }}>
-            {timeline.map((item, i) => (
-              <div key={i} style={{ display: "flex", gap: 12, padding: "9px 16px", position: "relative" }}>
-                {i < timeline.length - 1 && <div style={{ position: "absolute", left: 22, top: 28, bottom: -2, width: 1, background: T.border }} />}
-                <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.raised, border: `1px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: item.color, flexShrink: 0, zIndex: 1 }}>
-                  {item.icon}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: T.t1, fontSize: 12, lineHeight: 1.4 }}>{item.event}</div>
-                  <div style={{ color: T.t4, fontSize: 10, marginTop: 2 }}>{item.when}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Surface>
+  const profileMain = (
+    <>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 22 }}>
+        <div>
+          <h2 style={{ color: T.t1, fontSize: 20, fontWeight: 600, margin: 0, letterSpacing: "-0.02em" }}>Public profile</h2>
+          <p style={{ color: T.t3, fontSize: 13, margin: "6px 0 0", maxWidth: 520 }}>
+            This information appears on your profile and across cc-org-dash where your name is shown.
+          </p>
+        </div>
+        <Btn T={T} variant="default" small>
+          <ExternalLink size={14} /> View public profile
+        </Btn>
       </div>
 
-      <Modal T={T} open={editOpen} onClose={() => setEditOpen(false)} title="Edit Profile">
-        <Field label="Display name" T={T}><Input T={T} defaultValue="EcoAdmin" /></Field>
-        <Field label="Email" T={T}><Input T={T} defaultValue="admin@cc-org-dash.io" type="email" /></Field>
-        <Field label="Role / title" T={T}><Input T={T} defaultValue="Administrator" /></Field>
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <Btn T={T} variant="default" onClick={() => setEditOpen(false)}>Cancel</Btn>
-          <Btn T={T} variant="primary" onClick={() => setEditOpen(false)}>Save Changes</Btn>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 20, alignItems: "flex-start", marginBottom: 24 }}>
+        <div style={{ position: "relative" }}>
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: "50%",
+              padding: 3,
+              background: `linear-gradient(135deg, ${T.accent}, ${T.purple})`,
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                overflow: "hidden",
+                background: T.raised,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Avi name="EcoAdmin" size={94} />
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <Btn T={T} variant="default" small>
+              <Upload size={14} /> Update
+            </Btn>
+            <Btn T={T} variant="ghost" small>
+              <Trash2 size={14} /> Remove
+            </Btn>
+          </div>
+          <span style={{ color: T.t3, fontSize: 12 }}>PNG or JPG · max 2MB</span>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            <label style={{ color: T.t1, fontSize: 13, fontWeight: 600 }}>Name</label>
+            <InfoHint T={T} text="Your display name across the workspace." />
+          </div>
+          <Input T={T} defaultValue="EcoAdmin" />
+        </div>
+
+        <div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            <label style={{ color: T.t1, fontSize: 13, fontWeight: 600 }}>Welcome message</label>
+            <InfoHint T={T} text="Shown on your profile and in meeting invites." />
+          </div>
+          <TextArea
+            T={T}
+            rows={4}
+            defaultValue="Thanks for visiting — I coordinate operations and AI workflows for cc-org-dash. Reach out via Inbox for fastest response."
+          />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+          <Field label="Language" T={T}>
+            <Select T={T} style={{ width: "100%" }}>
+              <option>English (AU)</option>
+              <option>English (US)</option>
+            </Select>
+          </Field>
+          <div />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+          <Field label="Date format" T={T}>
+            <Select T={T} style={{ width: "100%" }}>
+              <option>DD/MM/YYYY</option>
+              <option>MM/DD/YYYY</option>
+              <option>YYYY-MM-DD</option>
+            </Select>
+          </Field>
+          <Field label="Time format" T={T}>
+            <Select T={T} style={{ width: "100%" }}>
+              <option>24h</option>
+              <option>12h am/pm</option>
+            </Select>
+          </Field>
+        </div>
+
+        <Field label="Country" T={T}>
+          <Select T={T} style={{ width: "100%" }}>
+            <option>Australia</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+          </Select>
+        </Field>
+
+        <div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            <label style={{ color: T.t1, fontSize: 13, fontWeight: 600 }}>Time zone</label>
+            <InfoHint T={T} text="Used for deadlines, cycles, and notifications." />
+          </div>
+          <div style={{ color: T.t3, fontSize: 12, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+            <Clock size={13} />
+            Current time: <span style={{ fontFamily: F.mono, color: T.t2 }}>{currentTimeLabel}</span>
+          </div>
+          <Select T={T} style={{ width: "100%", maxWidth: isMobile ? "100%" : 420 }}>
+            <option>Australia/Sydney</option>
+            <option>America/Chicago</option>
+            <option>UTC</option>
+          </Select>
+        </div>
+
+        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 18 }}>
+          <div style={{ color: T.t1, fontSize: 14, fontWeight: 600, marginBottom: 10 }}>Public email</div>
+          <p style={{ color: T.t3, fontSize: 12, margin: "0 0 8px" }}>Choose which verified email is visible on your profile.</p>
+          <Select T={T} style={{ width: "100%", maxWidth: 420 }}>
+            <option>admin@cc-org-dash.io</option>
+            <option>Hide email</option>
+          </Select>
+        </div>
+
+        <div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            <label style={{ color: T.t1, fontSize: 13, fontWeight: 600 }}>Bio</label>
+            <InfoHint T={T} text="Short description for your profile page." />
+          </div>
+          <TextArea T={T} rows={3} defaultValue="Administrator · cc-org-dash Global" />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 28, paddingTop: 20, borderTop: `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          <Btn T={T} variant="primary">
+            Save changes
+          </Btn>
+          <Btn T={T} variant="default">
+            Cancel
+          </Btn>
+        </div>
+        <Btn T={T} variant="danger" onClick={() => setDeleteOpen(true)}>
+          Delete account
+        </Btn>
+      </div>
+    </>
+  );
+
+  const brandingPanel = (
+    <>
+      <h2 style={{ color: T.t1, fontSize: 20, fontWeight: 600, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Branding</h2>
+      <p style={{ color: T.t3, fontSize: 13, margin: "0 0 20px", maxWidth: 560 }}>
+        Logo and accent colors for reports and shared links (demo).
+      </p>
+      <Surface T={T} style={{ padding: 20, marginBottom: 16 }}>
+        <div style={{ color: T.t2, fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Workspace logo</div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ width: 64, height: 64, borderRadius: 8, border: `1px dashed ${T.border}`, background: T.raised, display: "flex", alignItems: "center", justifyContent: "center", color: T.t3, fontSize: 11 }}>Upload</div>
+          <Btn T={T} variant="default" small>
+            Choose file
+          </Btn>
+        </div>
+      </Surface>
+      <Btn T={T} variant="primary">
+        Save branding
+      </Btn>
+    </>
+  );
+
+  const myLinkPanel = (
+    <>
+      <h2 style={{ color: T.t1, fontSize: 20, fontWeight: 600, margin: "0 0 8px", letterSpacing: "-0.02em" }}>My link</h2>
+      <p style={{ color: T.t3, fontSize: 13, margin: "0 0 20px" }}>Vanity URL for your public scheduling and profile.</p>
+      <Field label="Slug" T={T} hint="Lowercase letters, numbers, and hyphens.">
+        <div style={{ display: "flex", alignItems: "center", gap: 0, flexWrap: "wrap" }}>
+          <span
+            style={{
+              padding: "6px 10px",
+              background: T.raised,
+              border: `1px solid ${T.border}`,
+              borderRight: "none",
+              borderRadius: "6px 0 0 6px",
+              fontSize: 13,
+              color: T.t3,
+              fontFamily: F.mono,
+            }}
+          >
+            cc-org-dash.io/u/
+          </span>
+          <Input T={T} defaultValue="ecoadmin" style={{ borderRadius: "0 6px 6px 0", flex: 1, minWidth: 120 }} />
+        </div>
+      </Field>
+      <div style={{ marginTop: 20 }}>
+        <Btn T={T} variant="primary">
+          Save link
+        </Btn>
+      </div>
+    </>
+  );
+
+  const phonePanel = (
+    <>
+      <h2 style={{ color: T.t1, fontSize: 20, fontWeight: 600, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Phone number(s)</h2>
+      <p style={{ color: T.t3, fontSize: 13, margin: "0 0 20px" }}>Used for SMS alerts and verified callbacks.</p>
+      <Field label="Mobile" T={T}>
+        <Input T={T} placeholder="+61 …" />
+      </Field>
+      <div style={{ marginTop: 16 }}>
+        <Btn T={T} variant="primary">
+          Save phone
+        </Btn>
+      </div>
+    </>
+  );
+
+  const loginPanel = (
+    <>
+      <h2 style={{ color: T.t1, fontSize: 20, fontWeight: 600, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Login & security</h2>
+      <p style={{ color: T.t3, fontSize: 13, margin: "0 0 20px" }}>Password, two-factor authentication, and active sessions.</p>
+      {[
+        { label: "Two-factor authentication", sub: "Enabled via authenticator app", on: true },
+        { label: "Login notifications", sub: "Email when a new device signs in", on: true },
+        { label: "Require SSO for this org", sub: "When enabled, password login is disabled", on: false },
+      ].map((row) => (
+        <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: `1px solid ${T.border}` }}>
+          <div>
+            <div style={{ color: T.t1, fontSize: 13, fontWeight: 500 }}>{row.label}</div>
+            <div style={{ color: T.t3, fontSize: 12, marginTop: 2 }}>{row.sub}</div>
+          </div>
+          <Toggle T={T} on={row.on} onChange={() => {}} />
+        </div>
+      ))}
+      <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <Btn T={T} variant="default">
+          Change password
+        </Btn>
+        <Btn T={T} variant="ghost">
+          View sessions
+        </Btn>
+      </div>
+    </>
+  );
+
+  const cookiesPanel = (
+    <>
+      <h2 style={{ color: T.t1, fontSize: 20, fontWeight: 600, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Cookie settings</h2>
+      <p style={{ color: T.t3, fontSize: 13, margin: "0 0 20px" }}>Control optional cookies for analytics and product improvement.</p>
+      {[
+        { label: "Essential", sub: "Required for sign-in and security. Always on.", locked: true, on: true },
+        { label: "Analytics", sub: "Help us understand usage (anonymous).", locked: false, on: true },
+        { label: "Marketing", sub: "Personalized tips and release notes.", locked: false, on: false },
+      ].map((row) => (
+        <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: `1px solid ${T.border}` }}>
+          <div>
+            <div style={{ color: T.t1, fontSize: 13, fontWeight: 500 }}>
+              {row.label}
+              {row.locked && (
+                <span style={{ marginLeft: 8 }}>
+                  <Badge T={T}>Required</Badge>
+                </span>
+              )}
+            </div>
+            <div style={{ color: T.t3, fontSize: 12, marginTop: 2 }}>{row.sub}</div>
+          </div>
+          <Toggle T={T} on={row.on} onChange={() => {}} />
+        </div>
+      ))}
+      <div style={{ marginTop: 20 }}>
+        <Btn T={T} variant="primary">
+          Update preferences
+        </Btn>
+      </div>
+    </>
+  );
+
+  const mainPanel = () => {
+    switch (activeSection) {
+      case "profile":
+        return profileMain;
+      case "branding":
+        return brandingPanel;
+      case "mylink":
+        return myLinkPanel;
+      case "phone":
+        return phonePanel;
+      case "login":
+        return loginPanel;
+      case "cookies":
+        return cookiesPanel;
+      default:
+        return profileMain;
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 0, maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+      <div style={{ marginBottom: isMobile ? 16 : 22 }}>
+        <h1 style={{ color: T.t1, fontSize: isMobile ? 22 : 26, fontWeight: 600, margin: 0, letterSpacing: "-0.02em" }}>Account settings</h1>
+        <p style={{ color: T.t2, fontSize: 14, margin: "8px 0 0" }}>Manage your profile, security, and preferences.</p>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? 14 : 24, alignItems: "flex-start" }}>
+        {sidebar}
+        <main style={{ flex: 1, minWidth: 0 }}>
+          <Surface T={T} style={{ padding: isMobile ? "18px 16px" : "24px 28px 28px" }}>
+            {!isMobile && (
+              <div style={{ color: T.t4, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>{sectionTitle}</div>
+            )}
+            {mainPanel()}
+          </Surface>
+        </main>
+      </div>
+
+      <Modal T={T} open={deleteOpen} onClose={() => setDeleteOpen(false)} title="Delete account">
+        <p style={{ color: T.t2, fontSize: 14, lineHeight: 1.5, marginTop: 0 }}>
+          This will permanently delete your user and personal data in this demo. Type <strong>DELETE</strong> in production to confirm.
+        </p>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
+          <Btn T={T} variant="default" onClick={() => setDeleteOpen(false)}>
+            Cancel
+          </Btn>
+          <Btn T={T} variant="danger" onClick={() => setDeleteOpen(false)}>
+            Delete account
+          </Btn>
         </div>
       </Modal>
     </div>
