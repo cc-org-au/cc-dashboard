@@ -1,6 +1,6 @@
 // cc-org-dash — GitHub-inspired Business Command Center
 import { useState, useEffect } from "react";
-import { THEMES, Avi, F, PrimaryNavTabs } from "../components/cc-org-dash/primitives";
+import { THEMES, Avi, F, PrimaryNavTabs, SlideOver } from "../components/cc-org-dash/primitives";
 import { DB } from "../components/cc-org-dash/data";
 import HomeScreen from "../components/cc-org-dash/HomeScreen";
 import WorkScreen from "../components/cc-org-dash/WorkScreen";
@@ -12,10 +12,12 @@ import IntegrationsScreen from "../components/cc-org-dash/IntegrationsScreen";
 import SettingsScreen from "../components/cc-org-dash/SettingsScreen";
 import AccountScreen from "../components/cc-org-dash/AccountScreen";
 import NotifDrawer from "../components/cc-org-dash/NotifDrawer";
+import GlobalCommandRail from "../components/cc-org-dash/GlobalCommandRail";
+import GlobalCommandDetail, { getGlobalCommandTitle } from "../components/cc-org-dash/GlobalCommandDetail";
 import useIsMobile from "../components/cc-org-dash/useIsMobile";
 import {
   Home, Briefcase, Inbox, Users, BarChart3, FolderOpen, Plug, SettingsIcon,
-  Search, Bell, Plus, ChevronDown, User, LogOut, GitBranch
+  Search, Bell, Plus, ChevronDown, User, LogOut, GitBranch, PanelLeft
 } from "../components/cc-org-dash/icons";
 
 const TABS = [
@@ -31,6 +33,18 @@ const TABS = [
 
 const THEME_KEY = "cc-org-dash-theme";
 const THEME_KEY_LEGACY = "ecoos_theme";
+const GLOBAL_COMMAND_KEY = "cc-global-command-open";
+
+function readGlobalCommandOpen() {
+  try {
+    const v = localStorage.getItem(GLOBAL_COMMAND_KEY);
+    if (v === "0") return false;
+    if (v === "1") return true;
+  } catch {
+    /* ignore */
+  }
+  return typeof window !== "undefined" && window.innerWidth > 768;
+}
 
 function readStoredTheme() {
   try {
@@ -63,7 +77,17 @@ export default function CcOrgDash() {
   const [createOpen, setCreateOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [cmdQuery, setCmdQuery] = useState("");
+  const [globalCommandOpen, setGlobalCommandOpen] = useState(readGlobalCommandOpen);
+  const [globalCommandSel, setGlobalCommandSel] = useState(null);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GLOBAL_COMMAND_KEY, globalCommandOpen ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }, [globalCommandOpen]);
 
   useEffect(() => {
     const h = e => { if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setCmdOpen(p => !p); } };
@@ -71,7 +95,7 @@ export default function CcOrgDash() {
   }, []);
 
   const unread = DB.notifications.filter(n => !n.read).length;
-  const close = () => { setProfileOpen(false); setCreateOpen(false); };
+  const close = () => { setProfileOpen(false); setCreateOpen(false); setGlobalCommandSel(null); };
 
   const cmdResults = [
     ...TABS.map(t => ({ label: `Go to ${t.label}`, cat: "Jump to", action: () => { setTab(t.id); setCmdOpen(false); } })),
@@ -83,11 +107,34 @@ export default function CcOrgDash() {
   const grouped = cmdResults.reduce((acc, r) => { (acc[r.cat] = acc[r.cat] || []).push(r); return acc; }, {});
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: T.canvas, fontFamily: F.sans, color: T.t1 }} onClick={close}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: T.pageGradient ?? T.canvas, fontFamily: F.sans, color: T.t1 }} onClick={close}>
 
       {/* GitHub-style top nav */}
       <div style={{ background: T.nav, borderBottom: `1px solid ${T.border}`, color: T.t1, flexShrink: 0 }}>
         <div style={{ height: isMobile ? 52 : 60, display: "flex", alignItems: "center", padding: isMobile ? "0 10px" : "0 16px", gap: isMobile ? 8 : 16 }}>
+          <button
+            type="button"
+            title="Company command (portfolio & ops)"
+            onClick={(e) => {
+              e.stopPropagation();
+              setGlobalCommandOpen((o) => !o);
+            }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              border: `1px solid ${T.borderMuted ?? T.border}`,
+              background: T.surface,
+              cursor: "pointer",
+              color: T.t2,
+              flexShrink: 0,
+            }}
+          >
+            <PanelLeft size={18} strokeWidth={1.5} />
+          </button>
           {/* Wordmark */}
           <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <span style={{ color: T.t1, fontSize: isMobile ? 13 : 15, fontWeight: 700, letterSpacing: "-0.01em", fontFamily: F.mono }}>cc-org-dash</span>
@@ -193,18 +240,96 @@ export default function CcOrgDash() {
         </div>
       </div>
 
-      {/* Body */}
-      <div style={{ flex: 1, padding: isMobile ? "16px 12px" : "24px 28px", maxWidth: 1280, width: "100%", margin: "0 auto", boxSizing: "border-box" }} onClick={close}>
-        {tab === "home"         && <HomeScreen T={T} isMobile={isMobile} />}
-        {tab === "work"         && <WorkScreen T={T} isMobile={isMobile} />}
-        {tab === "inbox"        && <InboxScreen T={T} isMobile={isMobile} />}
-        {tab === "people"       && <PeopleScreen T={T} isMobile={isMobile} />}
-        {tab === "data"         && <DataScreen T={T} isMobile={isMobile} />}
-        {tab === "files"        && <FilesScreen T={T} isMobile={isMobile} />}
-        {tab === "integrations" && <IntegrationsScreen T={T} isMobile={isMobile} />}
-        {tab === "settings"     && <SettingsScreen T={T} themeKey={themeKey} setTheme={setTheme} isMobile={isMobile} />}
-        {tab === "account"      && <AccountScreen T={T} setTab={setTab} isMobile={isMobile} />}
+      {/* Body: global command rail + main */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, minWidth: 0 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: isMobile ? "column" : "row", minHeight: 0, minWidth: 0, overflow: "hidden" }}>
+          {isMobile && !globalCommandOpen && (
+            <div style={{ padding: "0 12px 10px", flexShrink: 0, boxSizing: "border-box", width: "100%" }}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setGlobalCommandOpen(true);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  padding: "10px 14px",
+                  width: "100%",
+                  borderRadius: 10,
+                  border: `1px solid ${T.borderMuted ?? T.border}`,
+                  background: T.raised,
+                  color: T.t2,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: F.sans,
+                  boxSizing: "border-box",
+                }}
+              >
+                <PanelLeft size={16} strokeWidth={1.5} />
+                Company command
+              </button>
+            </div>
+          )}
+
+          {(!isMobile || globalCommandOpen) && (
+            <GlobalCommandRail
+              T={T}
+              isOpen={globalCommandOpen}
+              onToggle={() => setGlobalCommandOpen((o) => !o)}
+              onSelectDetail={(sel) => setGlobalCommandSel(sel)}
+              isMobile={isMobile}
+            />
+          )}
+
+          <div
+            style={{
+              flex: "1 1 0%",
+              minWidth: 0,
+              maxWidth: "100%",
+              overflow: "auto",
+              WebkitOverflowScrolling: "touch",
+              display: "flex",
+              justifyContent: "center",
+              boxSizing: "border-box",
+            }}
+            onClick={close}
+          >
+            <div
+              style={{
+                maxWidth: 1280,
+                width: "100%",
+                padding: isMobile ? "16px 12px" : "24px 28px",
+                boxSizing: "border-box",
+              }}
+            >
+              {tab === "home"         && <HomeScreen T={T} isMobile={isMobile} />}
+              {tab === "work"         && <WorkScreen T={T} isMobile={isMobile} />}
+              {tab === "inbox"        && <InboxScreen T={T} isMobile={isMobile} />}
+              {tab === "people"       && <PeopleScreen T={T} isMobile={isMobile} />}
+              {tab === "data"         && <DataScreen T={T} isMobile={isMobile} />}
+              {tab === "files"        && <FilesScreen T={T} isMobile={isMobile} />}
+              {tab === "integrations" && <IntegrationsScreen T={T} isMobile={isMobile} />}
+              {tab === "settings"     && <SettingsScreen T={T} themeKey={themeKey} setTheme={setTheme} isMobile={isMobile} />}
+              {tab === "account"      && <AccountScreen T={T} setTab={setTab} isMobile={isMobile} />}
+            </div>
+          </div>
+        </div>
       </div>
+
+      <SlideOver
+        T={T}
+        open={!!globalCommandSel}
+        onClose={() => setGlobalCommandSel(null)}
+        title={getGlobalCommandTitle(globalCommandSel)}
+        subtitle="Company command · extended view"
+        width={460}
+      >
+        <GlobalCommandDetail T={T} selection={globalCommandSel} setTab={setTab} onClose={() => setGlobalCommandSel(null)} />
+      </SlideOver>
 
       {notifOpen && <NotifDrawer T={T} onClose={() => setNotifOpen(false)} />}
 

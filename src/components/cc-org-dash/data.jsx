@@ -84,6 +84,45 @@ export const DB = {
   },
 };
 
+/** Company command center — portfolio & ops snapshot (distinct from feature nav / Data apps) */
+export const GLOBAL_COMMAND = {
+  signals: {
+    critical: [
+      { id: "s1", title: "Auth P95 breach SLA", owner: "Platform", age: "12m" },
+      { id: "s2", title: "Refund anomaly window", owner: "Finance", age: "28m" },
+    ],
+    attention: [
+      { id: "s3", title: "HubSpot sync lag", owner: "RevOps", age: "1h" },
+      { id: "s4", title: "EMEA capacity gap", owner: "Ops", age: "2h" },
+      { id: "s5", title: "Audit evidence item", owner: "Security", age: "3h" },
+    ],
+    fyiCount: 11,
+  },
+  initiatives: [
+    { id: "ini1", title: "Revenue engine Q2", health: "green", owner: "Sarah M.", window: "FY-Q2", summary: "Forecast confidence 87%. Pipeline coverage healthy." },
+    { id: "ini2", title: "Customer 360 launch", health: "amber", owner: "James K.", window: "May 30", summary: "Two dependencies on identity resolution." },
+    { id: "ini3", title: "Trust & compliance", health: "green", owner: "Admin", window: "Apr 22", summary: "ISO track on schedule for sign-off." },
+    { id: "ini4", title: "EMEA hub stand-up", health: "neutral", owner: "Marco R.", window: "H2", summary: "Planning; no execution risk yet." },
+  ],
+  objectives: [
+    { id: "kr1", title: "ARR +18% vs prior quarter", progress: 74, period: "Q2 2026", dept: "GTM", detail: "Weighted pipeline covers 112% of gap; discount risk in enterprise tier." },
+    { id: "kr2", title: "Unified data layer GA", progress: 81, period: "Q2 2026", dept: "Engineering", detail: "Kafka cutover complete; remaining work is consumer hardening." },
+    { id: "kr3", title: "Enterprise NPS ≥ 45", progress: 52, period: "H1 2026", dept: "CX", detail: "Survey n=84; detractors concentrated in onboarding." },
+  ],
+  milestones: [
+    { id: "ms1", title: "Board readout", date: "Apr 24", risk: "low", detail: "Slides locked; appendix pending finance sign-off." },
+    { id: "ms2", title: "Customer 360 private beta", date: "May 02", risk: "medium", detail: "5 accounts; success criteria = activation + 1 workflow each." },
+    { id: "ms3", title: "ISO 27001 sign-off", date: "Apr 22", risk: "low", detail: "Final control evidence upload by Apr 20." },
+  ],
+  blockers: [
+    { id: "bl1", title: "Legal review — enterprise DPAs", impact: "high", team: "Sales", detail: "Blocking 3 deals >$400K ARR. Target response Apr 21." },
+  ],
+  notes: [
+    { id: "pn1", title: "Strategy offsite — follow-ups", preview: "3 actions for GTM; owner map in Notion.", updated: "Yesterday" },
+    { id: "pn2", title: "Vendor scorecard Q1", preview: "Snowflake vs Databricks cost model.", updated: "Apr 16" },
+  ],
+};
+
 export const FILE_FOLDERS = [
   { id: "root",     label: "All Files",  icon: "🗂" },
   { id: "projects", label: "Projects",   icon: "📁" },
