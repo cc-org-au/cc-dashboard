@@ -423,6 +423,36 @@ export function Lock(p) {
     </Svg>
   );
 }
+
+export function Eye(p) {
+  return (
+    <Svg {...p}>
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </Svg>
+  );
+}
+
+export function EyeOff(p) {
+  return (
+    <Svg {...p}>
+      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.092 6.914 1.001 1.001 0 0 1 0 .696 10.747 10.747 0 0 1-1.395 2.563" />
+      <path d="M14.084 14.158a3 3 0 0 1-4.087-4.087" />
+      <path d="m17.479 17.499-10.26-10.26" />
+      <path d="M2 12s3-7 10-7c1.236 0 2.35.22 3.36.632" />
+    </Svg>
+  );
+}
+
+export function Globe(p) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </Svg>
+  );
+}
 export function CreditCard(p) {
   return (
     <Svg {...p}>
@@ -520,6 +550,38 @@ export function MoreHorizontal(p) {
       <circle cx="12" cy="12" r="1" />
       <circle cx="19" cy="12" r="1" />
       <circle cx="5" cy="12" r="1" />
+    </Svg>
+  );
+}
+
+/** Vertical ⋮ — column menus */
+export function MoreVertical(p) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="19" r="1" />
+    </Svg>
+  );
+}
+
+export function Rocket(p) {
+  return (
+    <Svg {...p}>
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+    </Svg>
+  );
+}
+
+export function Monitor(p) {
+  return (
+    <Svg {...p}>
+      <rect width="20" height="14" x="2" y="3" rx="2" ry="2" />
+      <line x1="8" x2="16" y1="21" y2="21" />
+      <line x1="12" x2="12" y1="17" y2="21" />
     </Svg>
   );
 }

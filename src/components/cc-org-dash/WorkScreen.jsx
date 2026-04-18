@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Surface, Btn, Badge, Dot, Avi, Progress, Table, SlideOver, Modal, Field, Input, Select, SubNav, F } from "./primitives";
 import { DB, WORKFLOW_PRESETS, ROADMAP_QUARTERS, ACTIVE_CYCLE } from "./data";
 import WorkflowVis from "./WorkflowVis";
-import { Briefcase, CircleDot, LayoutGrid, Workflow, Plus, BookOpen, Calendar, ChevronRight, MoreHorizontal } from "./icons";
+import { Briefcase, CircleDot, LayoutGrid, Workflow, Plus, BookOpen, Calendar, ChevronRight, MoreHorizontal, Rocket, Monitor, CheckCircle2, MoreVertical } from "./icons";
 
 function labelPillStyle(label) {
   let h = 0;
@@ -19,6 +19,31 @@ const ISSUE_GROUPS = [
   { status: "in_progress", title: "In progress" },
   { status: "todo", title: "Todo" },
   { status: "done", title: "Done" },
+];
+
+function formatBoardDate(due) {
+  if (!due) return "—";
+  return `${due}, 2026`;
+}
+
+function boardPriorityLabel(pri) {
+  if (pri === "high") return "Urgent";
+  if (pri === "medium") return "Medium";
+  return "Low";
+}
+
+function taskCardBlurb(card) {
+  if (card.project) return card.project;
+  if (card.labels?.length) return card.labels.slice(0, 2).join(" · ");
+  return "Track in workspace";
+}
+
+/** Order matches reference: new → active → done → stale */
+const KANBAN_COLUMNS = [
+  { key: "todo", title: "New tasks", Icon: Rocket },
+  { key: "in_progress", title: "Working on", Icon: Monitor },
+  { key: "done", title: "Completed", Icon: CheckCircle2 },
+  { key: "review", title: "Outdated", Icon: Calendar },
 ];
 
 function IssueTicketRow({ T, r, selected, checked, onToggleCheck, onOpen }) {
@@ -71,6 +96,19 @@ export default function WorkScreen({ T, isMobile }) {
 
   const sc = { on_track: T.green, at_risk: T.amber, planning: T.t3, done: T.green, todo: T.t3, in_progress: T.accent, review: T.amber };
   const pc = { high: T.red, medium: T.amber, low: T.t3 };
+  const boardUiAccent = T.purple ?? T.accent;
+  const kanbanColIconBtn = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    border: `1px solid ${T.border}`,
+    background: T.surface,
+    color: T.t2,
+    cursor: "pointer",
+  };
 
   const filteredTasks = statusFilter === "all" ? DB.tasks : DB.tasks.filter(t => t.status === statusFilter);
 
@@ -116,7 +154,7 @@ export default function WorkScreen({ T, isMobile }) {
           <div style={{ color: T.t1, fontSize: 24, fontWeight: 600, letterSpacing: "-0.01em" }}>Work</div>
           <div style={{ color: T.t2, fontSize: 13, marginTop: 2 }}>{DB.projects.length} projects · {DB.tasks.length} open issues</div>
         </div>
-        {workView !== "workflows" && workView !== "wiki" && (
+        {workView !== "workflows" && workView !== "wiki" && workView !== "kanban" && (
           <Btn T={T} variant="primary" onClick={() => setNewTaskModal(true)}><Plus size={14} /> New issue</Btn>
         )}
       </div>
@@ -347,33 +385,158 @@ export default function WorkScreen({ T, isMobile }) {
         )}
 
         {workView === "kanban" && (
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4,1fr)", gap: 10, alignItems: "start" }}>
-            {[["todo", "To do", T.t3], ["in_progress", "In progress", T.accent], ["review", "Review", T.amber], ["done", "Done", T.green]].map(([col, label, color]) => (
-              <div key={col} onDragOver={e => e.preventDefault()} onDrop={() => handleDrop(col)}
-                style={{ background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8, padding: 10, minHeight: 200 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9, padding: "2px 4px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-                    <span style={{ color: T.t1, fontSize: 13, fontWeight: 600 }}>{label}</span>
-                  </div>
-                  <Badge T={T}>{(board[col] || []).length}</Badge>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                  {(board[col] || []).map(card => (
-                    <div key={card.id} draggable onDragStart={() => setDragCard(card)}
-                      style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 6, padding: "9px 11px", cursor: "grab", borderLeft: `3px solid ${pc[card.priority]}` }}
-                      onMouseEnter={e => e.currentTarget.style.boxShadow = T.shadowMd}
-                      onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}>
-                      <div style={{ color: T.t1, fontSize: 13, fontWeight: 500, marginBottom: 6, lineHeight: 1.4 }}>{card.title}</div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ color: T.t3, fontSize: 11, fontFamily: F.mono }}>#{card.id}</span>
-                        <Avi name={card.assignee} size={20} />
-                      </div>
-                    </div>
-                  ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ color: T.t1, fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em" }}>Tasks board</div>
+                <div style={{ color: T.t2, fontSize: 13, marginTop: 4, maxWidth: 520, lineHeight: 1.45 }}>
+                  Create and complete tasks using boards.
                 </div>
               </div>
-            ))}
+              <Btn
+                T={T}
+                variant="primary"
+                onClick={() => setNewTaskModal(true)}
+                style={{
+                  background: boardUiAccent,
+                  borderColor: boardUiAccent,
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.06)",
+                }}
+              >
+                <Plus size={14} /> Create board
+              </Btn>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(4, minmax(0, 1fr))", gap: isMobile ? 14 : 12, alignItems: "start" }}>
+              {KANBAN_COLUMNS.map(({ key: col, title, Icon }) => {
+                const list = board[col] || [];
+                return (
+                    <div
+                      key={col}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => handleDrop(col)}
+                      style={{
+                        background: T.canvas,
+                        border: `1px solid ${T.border}`,
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        minHeight: 240,
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          padding: "10px 12px",
+                          background: T.raised,
+                          borderBottom: `1px solid ${T.border}`,
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                          <div
+                            style={{
+                              width: 34,
+                              height: 34,
+                              borderRadius: 10,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              background: T.purpleBg ?? "rgba(124, 58, 237, 0.08)",
+                              color: boardUiAccent,
+                              border: `1px solid ${T.purpleBorder ?? "rgba(196, 181, 253, 0.5)"}`,
+                            }}
+                          >
+                            <Icon size={17} color={boardUiAccent} />
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: T.t1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {title}{" "}
+                            <span style={{ color: T.t3, fontWeight: 600 }}>({list.length})</span>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                          <button type="button" aria-label="Add card" style={kanbanColIconBtn} onClick={() => setNewTaskModal(true)}>
+                            <Plus size={15} />
+                          </button>
+                          <button type="button" aria-label="Column menu" style={kanbanColIconBtn}>
+                            <MoreVertical size={15} />
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 9, flex: 1 }}>
+                        {list.map((card) => {
+                          const doneCol = col === "done";
+                          return (
+                            <div
+                              key={card.id}
+                              draggable
+                              onDragStart={() => setDragCard(card)}
+                              style={{
+                                background: T.surface,
+                                border: `1px solid ${T.border}`,
+                                borderRadius: 10,
+                                padding: "12px 12px 10px",
+                                cursor: "grab",
+                                boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.boxShadow = T.shadowMd;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.boxShadow = "0 1px 2px rgba(15, 23, 42, 0.04)";
+                              }}
+                            >
+                              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                                <input
+                                  type="checkbox"
+                                  checked={doneCol}
+                                  readOnly
+                                  tabIndex={-1}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    marginTop: 3,
+                                    width: 16,
+                                    height: 16,
+                                    accentColor: boardUiAccent,
+                                    cursor: "default",
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ color: T.t1, fontSize: 14, fontWeight: 600, lineHeight: 1.35, marginBottom: 6 }}>{card.title}</div>
+                                  <div style={{ color: T.t3, fontSize: 12, lineHeight: 1.45, marginBottom: 10 }}>{taskCardBlurb(card)}</div>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    <Avi name={card.assignee} size={24} />
+                                    <span style={{ flex: 1, textAlign: "center", fontSize: 11, color: T.t3, fontFamily: F.sans }}>{formatBoardDate(card.due)}</span>
+                                    <span
+                                      style={{
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        padding: "4px 9px",
+                                        borderRadius: 8,
+                                        background: T.canvas,
+                                        color: T.t2,
+                                        border: `1px solid ${T.border}`,
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {boardPriorityLabel(card.priority)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

@@ -16,6 +16,7 @@ import GlobalAgentPanel from "../components/cc-org-dash/GlobalAgentPanel";
 import PlatformStatusBar from "../components/cc-org-dash/PlatformStatusBar";
 import GlobalCommandRail from "../components/cc-org-dash/GlobalCommandRail";
 import GlobalCommandDetail, { getGlobalCommandTitle } from "../components/cc-org-dash/GlobalCommandDetail";
+import AuthPortal from "../components/cc-org-dash/AuthPortal";
 import useIsMobile from "../components/cc-org-dash/useIsMobile";
 import {
   Home, Briefcase, Inbox, Users, BarChart3, FolderOpen, Plug, SettingsIcon,
@@ -36,7 +37,20 @@ const TABS = [
 const THEME_KEY = "cc-org-dash-theme";
 const THEME_KEY_LEGACY = "ecoos_theme";
 const GLOBAL_COMMAND_KEY = "cc-global-command-open";
+const AUTH_SESSION_KEY = "cc-org-dash-auth";
 const ATLAS_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
+
+function readAuthSession() {
+  try {
+    const raw = localStorage.getItem(AUTH_SESSION_KEY) || (typeof sessionStorage !== "undefined" ? sessionStorage.getItem(AUTH_SESSION_KEY) : null);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (o && typeof o.email === "string") return o;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
 
 function readGlobalCommandOpen() {
   try {
@@ -63,6 +77,7 @@ function readStoredTheme() {
 
 export default function CcOrgDash() {
   const [themeKey, setThemeKey] = useState(readStoredTheme);
+  const [authSession, setAuthSession] = useState(() => readAuthSession());
   const T = THEMES[themeKey] || THEMES.light;
   const setTheme = (k) => {
     try {
@@ -85,6 +100,33 @@ export default function CcOrgDash() {
   const [globalAgentOpen, setGlobalAgentOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  const setAuth = (payload) => {
+    const next = { email: payload.email, name: payload.name || "Member", at: Date.now() };
+    try {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+      if (payload.remember !== false) {
+        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(next));
+      } else {
+        sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(next));
+      }
+    } catch {
+      /* ignore */
+    }
+    setAuthSession(next);
+  };
+
+  const logout = () => {
+    try {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+    } catch {
+      /* ignore */
+    }
+    setAuthSession(null);
+    setProfileOpen(false);
+  };
+
   useEffect(() => {
     try {
       localStorage.setItem(GLOBAL_COMMAND_KEY, globalCommandOpen ? "1" : "0");
@@ -100,6 +142,19 @@ export default function CcOrgDash() {
 
   const unread = DB.notifications.filter(n => !n.read).length;
   const close = () => { setProfileOpen(false); setCreateOpen(false); setGlobalCommandSel(null); };
+
+  if (!authSession) {
+    return (
+      <AuthPortal
+        T={T}
+        themeKey={themeKey}
+        setTheme={setThemeKey}
+        onSuccess={(payload) => setAuth(payload)}
+      />
+    );
+  }
+
+  const displayName = authSession.name || authSession.email?.split("@")[0] || "Member";
 
   const cmdResults = [
     ...TABS.map(t => ({ label: `Go to ${t.label}`, cat: "Jump to", action: () => { setTab(t.id); setCmdOpen(false); } })),
@@ -140,10 +195,10 @@ export default function CcOrgDash() {
               height: 36,
               padding: 0,
               borderRadius: 10,
-              border: `1px solid ${globalCommandOpen ? T.accentBorder : T.borderMuted ?? T.border}`,
-              background: globalCommandOpen ? T.accentBg : T.surface,
+              border: `1px solid ${T.purpleBorder}`,
+              background: globalCommandOpen ? T.purpleBg : T.surface,
               cursor: "pointer",
-              color: globalCommandOpen ? T.accent : T.t2,
+              color: T.purple,
               flexShrink: 0,
               transition: `background .18s ${ATLAS_EASE}, border-color .18s, color .18s`,
             }}
@@ -155,7 +210,7 @@ export default function CcOrgDash() {
                 transition: `transform 0.32s ${ATLAS_EASE}`,
               }}
             >
-              <PanelLeft size={18} strokeWidth={1.5} />
+              <PanelLeft size={18} strokeWidth={1.5} color="currentColor" />
             </span>
           </button>
           {/* Wordmark */}
@@ -217,13 +272,14 @@ export default function CcOrgDash() {
             <div style={{ position: "relative" }}>
               <button onClick={e => { e.stopPropagation(); setProfileOpen(p => !p); }}
                 style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px", background: "none", border: "none", cursor: "pointer", borderRadius: "50%", transition: "all .15s" }}>
-                <Avi name="EcoAdmin" size={26} />
+                <Avi name={displayName} size={26} />
               </button>
               {profileOpen && (
                 <div onClick={e => e.stopPropagation()} style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", background: T.surface, border: `1px solid ${T.border}`, borderRadius: 8, width: 220, zIndex: 200, boxShadow: T.shadowLg, overflow: "hidden" }}>
                   <div style={{ padding: "12px 14px", borderBottom: `1px solid ${T.border}` }}>
                     <div style={{ color: T.t1, fontSize: 13 }}>Signed in as</div>
-                    <div style={{ color: T.t1, fontSize: 14, fontWeight: 600 }}>EcoAdmin</div>
+                    <div style={{ color: T.t1, fontSize: 14, fontWeight: 600 }}>{displayName}</div>
+                    <div style={{ color: T.t3, fontSize: 12, marginTop: 4, wordBreak: "break-all" }}>{authSession.email}</div>
                   </div>
                   {[
                     { l: "Your profile",   icon: <User size={15} />, a: () => { setTab("account"); setProfileOpen(false); } },
@@ -237,7 +293,7 @@ export default function CcOrgDash() {
                     </button>
                   ))}
                   <div style={{ borderTop: `1px solid ${T.border}` }}>
-                    <button style={{ width: "100%", background: "none", border: "none", padding: "8px 14px", textAlign: "left", fontSize: 13, color: T.t1, cursor: "pointer", fontFamily: F.sans, display: "flex", alignItems: "center", gap: 10 }}
+                    <button type="button" onClick={() => logout()} style={{ width: "100%", background: "none", border: "none", padding: "8px 14px", textAlign: "left", fontSize: 13, color: T.t1, cursor: "pointer", fontFamily: F.sans, display: "flex", alignItems: "center", gap: 10 }}
                       onMouseEnter={e => e.currentTarget.style.background = T.hover}
                       onMouseLeave={e => e.currentTarget.style.background = "none"}>
                       <LogOut size={15} color={T.t3} /> Sign out
@@ -261,10 +317,10 @@ export default function CcOrgDash() {
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                border: `1px solid ${globalAgentOpen ? T.accentBorder : T.borderMuted ?? T.border}`,
-                background: globalAgentOpen ? T.accentBg : T.surface,
+                border: `1px solid ${T.purpleBorder}`,
+                background: globalAgentOpen ? T.purpleBg : T.surface,
                 cursor: "pointer",
-                color: globalAgentOpen ? T.accent : T.t2,
+                color: T.purple,
                 flexShrink: 0,
                 transition: `background .18s ${ATLAS_EASE}, border-color .18s, color .18s`,
               }}
@@ -276,7 +332,7 @@ export default function CcOrgDash() {
                   transition: `transform 0.32s ${ATLAS_EASE}`,
                 }}
               >
-                <Bot size={18} strokeWidth={1.5} />
+                <Bot size={18} strokeWidth={1.5} color="currentColor" />
               </span>
             </button>
           </div>
@@ -315,15 +371,15 @@ export default function CcOrgDash() {
                   padding: "10px 14px",
                   width: "100%",
                   borderRadius: 10,
-                  border: `1px solid ${T.borderMuted ?? T.border}`,
-                  background: T.raised,
-                  color: T.t2,
+                  border: `1px solid ${T.purpleBorder}`,
+                  background: T.surface,
+                  color: T.purple,
                   cursor: "pointer",
                   boxSizing: "border-box",
                 }}
               >
                 <span style={{ display: "inline-flex" }}>
-                  <PanelLeft size={18} strokeWidth={1.5} />
+                  <PanelLeft size={18} strokeWidth={1.5} color="currentColor" />
                 </span>
               </button>
             </div>
