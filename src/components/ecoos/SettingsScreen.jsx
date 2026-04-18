@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Surface, Btn, Badge, Dot, Avi, Toggle, Modal, Field, Input, Select, Progress, THEMES, F } from "./primitives";
 import { DB } from "./data";
-import { Settings as SettingsIcon, Bot, Bell, Lock, CreditCard, Users, Palette, Sun, Moon } from "lucide-react";
+import { SettingsIcon, Bot, Bell, Lock, CreditCard, Users, Palette, Sun, Moon } from "./icons";
 
 export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
   const [tab, setTab] = useState("general");

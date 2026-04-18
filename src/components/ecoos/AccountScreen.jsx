@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Surface, Btn, Badge, Toggle, Modal, Field, Input, Select, F } from "./primitives";
-import { CheckCircle2, ArrowUp, Plus, CircleDot, GitBranch, LogIn } from "lucide-react";
+import { CheckCircle2, ArrowUp, Plus, CircleDot, GitBranch, LogIn } from "./icons";
 
 export default function AccountScreen({ T, setTab, isMobile }) {
   const [editOpen, setEditOpen] = useState(false);

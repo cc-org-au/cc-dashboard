@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Surface, Btn, Badge, Dot, Progress, SlideOver, SectionLabel, F, SubNav } from "./primitives";
 import { DB } from "./data";
-import { BarChart3, GitPullRequest, CheckCircle2, Activity, Star, TrendingUp, TrendingDown } from "lucide-react";
+import { BarChart3, GitPullRequest, CheckCircle2, Activity, Star, TrendingUp, TrendingDown } from "./icons";
 
 export default function HomeScreen({ T, isMobile }) {
   const [detailProject, setDetailProject] = useState(null);

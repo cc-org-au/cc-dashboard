@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Surface, Badge, Table, SlideOver, Sparkline, SubNav, F } from "./primitives";
 import { DB, spark } from "./data";
-import { BarChart3, Activity, Zap, AlertCircle } from "lucide-react";
+import { BarChart3, Activity, Zap, AlertCircle } from "./icons";
 
 export default function DataScreen({ T, isMobile }) {
   const [liveData, setLiveData] = useState(DB.stats.map(s => ({ ...s, spark: spark() })));

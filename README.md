@@ -38,7 +38,3 @@ These variables are optional. `app-params` can also read `app_id`, `access_token
 | `VITE_APP_ID` | Default app identifier stored in local storage |
 | `VITE_APP_BASE_URL` | Optional API base URL for future integrations |
 | `VITE_FUNCTIONS_VERSION` | Optional version string for API clients |
-
-## Minimal EcoOS app
-
-The `my-app/` directory is a separate Vite + React bundle with only core dependencies, used for a stripped-down EcoOS experience.

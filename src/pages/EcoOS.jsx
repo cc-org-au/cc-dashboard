@@ -14,9 +14,9 @@ import AccountScreen from "../components/ecoos/AccountScreen";
 import NotifDrawer from "../components/ecoos/NotifDrawer";
 import useIsMobile from "../components/ecoos/useIsMobile";
 import {
-  Home, Briefcase, Inbox, Users, BarChart3, FolderOpen, Plug, Settings as SettingsIcon,
+  Home, Briefcase, Inbox, Users, BarChart3, FolderOpen, Plug, SettingsIcon,
   Search, Bell, Plus, ChevronDown, User, LogOut, GitBranch
-} from "lucide-react";
+} from "../components/ecoos/icons";
 
 const TABS = [
   { id: "home",         label: "Dashboard",     icon: <Home size={16} /> },
@@ -29,10 +29,25 @@ const TABS = [
   { id: "settings",     label: "Settings",      icon: <SettingsIcon size={16} /> },
 ];
 
+function readStoredTheme() {
+  try {
+    return localStorage.getItem("ecoos_theme") || "light";
+  } catch {
+    return "light";
+  }
+}
+
 export default function EcoOS() {
-  const [themeKey, setThemeKey] = useState(() => localStorage.getItem("ecoos_theme") || "light");
+  const [themeKey, setThemeKey] = useState(readStoredTheme);
   const T = THEMES[themeKey] || THEMES.light;
-  const setTheme = k => { localStorage.setItem("ecoos_theme", k); setThemeKey(k); };
+  const setTheme = (k) => {
+    try {
+      localStorage.setItem("ecoos_theme", k);
+    } catch {
+      /* quota / private mode */
+    }
+    setThemeKey(k);
+  };
 
   const [tab, setTab] = useState("home");
   const [notifOpen, setNotifOpen] = useState(false);

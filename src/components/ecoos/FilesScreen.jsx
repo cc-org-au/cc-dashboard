@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Btn, Badge, Avi, Modal, F, SubNav } from "./primitives";
 import { FILE_FOLDERS, FILE_DATA, FILE_ICONS } from "./data";
-import { FolderOpen, Clock, Star, Upload, LayoutGrid, List, Plus, ChevronRight } from "lucide-react";
+import { FolderOpen, Clock, Star, Upload, LayoutGrid, List, Plus, ChevronRight } from "./icons";
 
 export default function FilesScreen({ T, isMobile }) {
   const [folder, setFolder] = useState("root");

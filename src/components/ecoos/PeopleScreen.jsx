@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Surface, Btn, Badge, Dot, Avi, Table, SlideOver, Modal, Field, Input, Select, SubNav, SectionLabel, F } from "./primitives";
 import { DB } from "./data";
-import { Users, Shield, Mail, Plus, UserPlus } from "lucide-react";
+import { Users, Shield, Mail, Plus, UserPlus } from "./icons";
 
 export default function PeopleScreen({ T, isMobile }) {
   const [selected, setSelected] = useState(null);

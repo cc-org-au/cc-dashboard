@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Surface, Btn, Badge, Dot, Toggle, SlideOver, SubNav } from "./primitives";
 import { DB } from "./data";
-import { Plug, Zap, Key, Plus } from "lucide-react";
+import { Plug, Zap, Key, Plus } from "./icons";
 
 export default function IntegrationsScreen({ T, isMobile }) {
   const [selected, setSelected] = useState(null);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Btn, Badge, F, SubNav } from "./primitives";
 import { DB } from "./data";
-import { Inbox, AtSign, Star, Archive, Search, Edit2, Paperclip, Smile, Code2, Bot } from "lucide-react";
+import { Inbox, AtSign, Star, Archive, Search, Edit2, Paperclip, Smile, Code2, Bot } from "./icons";
 
 export default function InboxScreen({ T, isMobile }) {
   const [activeAgent, setActiveAgent] = useState("ag1");

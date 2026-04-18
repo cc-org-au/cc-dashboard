@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Surface, Btn, Badge, Dot, Avi, Progress, Table, SlideOver, Modal, Field, Input, Select, SubNav, F } from "./primitives";
 import { DB } from "./data";
 import WorkflowVis from "./WorkflowVis";
-import { Briefcase, CircleDot, LayoutGrid, Workflow, Plus, BookOpen } from "lucide-react";
+import { Briefcase, CircleDot, LayoutGrid, Workflow, Plus, BookOpen } from "./icons";
 
 export default function WorkScreen({ T, isMobile }) {
   const [view, setView] = useState("projects");
