@@ -1,0 +1,123 @@
+// Stub data for EcoOS demo
+export const spark = (n = 14) => Array.from({ length: n }, () => Math.random() * 60 + 20);
+
+export const DB = {
+  stats: [
+    { id: "rev",   label: "Monthly Revenue",  value: "$284,320", delta: "+12.4%", up: true,  color: "#1a7f37" },
+    { id: "users", label: "Active Users",      value: "4,821",    delta: "+8.1%",  up: true,  color: "#0969da" },
+    { id: "tasks", label: "Open Tasks",        value: "143",      delta: "-3.2%",  up: false, color: "#9a6700" },
+    { id: "health",label: "System Health",     value: "99.7%",    delta: "stable", up: true,  color: "#8250df" },
+  ],
+  activity: [
+    { id: "a1", user: "Sarah M.",  action: "Closed deal — Acme Corp",                  time: "2m ago",  type: "crm", dot: "#1a7f37" },
+    { id: "a2", user: "AI Agent",  action: "Generated Q2 forecast report",             time: "8m ago",  type: "ai",  dot: "#8250df" },
+    { id: "a3", user: "James K.",  action: "Deployed v2.4.1 to production",            time: "14m ago", type: "dev", dot: "#0969da" },
+    { id: "a4", user: "System",    action: "Backup completed — 3.2GB",                 time: "1h ago",  type: "sys", dot: "#6e7781" },
+    { id: "a5", user: "Priya S.",  action: "Onboarded TerraForm Solutions",            time: "2h ago",  type: "crm", dot: "#1a7f37" },
+    { id: "a6", user: "AI Agent",  action: "Flagged anomaly in sensor stream",         time: "3h ago",  type: "ai",  dot: "#d1242f" },
+  ],
+  projects: [
+    { id: "p1", name: "Q2 Growth Initiative", dept: "Sales",       status: "on_track", progress: 68, owner: "Sarah M.", due: "Jun 30", priority: "high" },
+    { id: "p2", name: "Platform Redesign",    dept: "Product",     status: "at_risk",  progress: 42, owner: "James K.", due: "May 15", priority: "high" },
+    { id: "p3", name: "Data Pipeline v3",     dept: "Engineering", status: "on_track", progress: 81, owner: "Priya S.", due: "Apr 30", priority: "medium" },
+    { id: "p4", name: "EMEA Expansion",       dept: "Operations",  status: "planning", progress: 15, owner: "Marco R.", due: "Dec 1",  priority: "medium" },
+    { id: "p5", name: "ISO 27001 Audit",      dept: "Security",    status: "on_track", progress: 95, owner: "Admin",    due: "Apr 22", priority: "high" },
+    { id: "p6", name: "Partner API v2",       dept: "Engineering", status: "on_track", progress: 60, owner: "Priya S.", due: "May 28", priority: "low" },
+  ],
+  tasks: [
+    { id: "t1", title: "Review Q2 pipeline forecast",  project: "Q2 Growth Initiative", assignee: "Sarah M.", priority: "high",   status: "todo",        due: "Apr 22" },
+    { id: "t2", title: "Resolve auth service latency", project: "Platform Redesign",    assignee: "James K.", priority: "high",   status: "in_progress", due: "Apr 20" },
+    { id: "t3", title: "Deploy Kafka consumer v3",     project: "Data Pipeline v3",     assignee: "Priya S.", priority: "medium", status: "in_progress", due: "Apr 25" },
+    { id: "t4", title: "Draft EMEA go-to-market plan", project: "EMEA Expansion",       assignee: "Marco R.", priority: "medium", status: "todo",        due: "May 10" },
+    { id: "t5", title: "Complete ISO control mapping", project: "ISO 27001 Audit",      assignee: "Admin",    priority: "high",   status: "review",      due: "Apr 21" },
+    { id: "t6", title: "Update OpenAPI docs",          project: "Partner API v2",       assignee: "Priya S.", priority: "low",    status: "done",        due: "Apr 18" },
+    { id: "t7", title: "Competitor analysis report",   project: "Q2 Growth Initiative", assignee: "Sarah M.", priority: "medium", status: "done",        due: "Apr 15" },
+  ],
+  people: [
+    { id: "u1", name: "Sarah Mitchell",  role: "Head of Sales",      dept: "Sales",       status: "active", email: "sarah@co.io" },
+    { id: "u2", name: "James Kowalski",  role: "Engineering Lead",   dept: "Engineering", status: "active", email: "james@co.io" },
+    { id: "u3", name: "Priya Sharma",    role: "Data Engineer",      dept: "Engineering", status: "active", email: "priya@co.io" },
+    { id: "u4", name: "Marco Reyes",     role: "Ops Manager",        dept: "Operations",  status: "active", email: "marco@co.io" },
+    { id: "u5", name: "Luna Park",       role: "Product Designer",   dept: "Product",     status: "away",   email: "luna@co.io" },
+    { id: "u6", name: "Aria Chen",       role: "AI Lead",            dept: "AI",          status: "active", email: "aria@co.io" },
+  ],
+  agents: [
+    { id: "ag1", name: "SalesGPT",      role: "CRM assistant, deal coaching",   status: "online", model: "gpt-4o",       calls: 1284 },
+    { id: "ag2", name: "DataOracle",    role: "Analytics & forecasting",         status: "online", model: "claude-3.5",   calls: 892 },
+    { id: "ag3", name: "DevAssist",     role: "Code review, deployments",        status: "idle",   model: "gpt-4o-mini",  calls: 456 },
+    { id: "ag4", name: "SupportBot",    role: "Customer support tier-1",         status: "online", model: "gpt-4o",       calls: 5621 },
+    { id: "ag5", name: "ComplianceAI",  role: "ISO / SOC2 monitoring",           status: "paused", model: "claude-3",     calls: 98 },
+  ],
+  integrations: [
+    { id: "i1",  name: "Salesforce",       cat: "CRM",            status: "connected", logo: "☁️", users: 42, synced: "2m ago" },
+    { id: "i2",  name: "Slack",            cat: "Communication",  status: "connected", logo: "💬", users: 89, synced: "live" },
+    { id: "i3",  name: "GitHub",           cat: "Development",    status: "connected", logo: "🐙", users: 18, synced: "live" },
+    { id: "i4",  name: "Stripe",           cat: "Billing",        status: "connected", logo: "💳", users: 3,  synced: "5m ago" },
+    { id: "i5",  name: "Google Workspace", cat: "Productivity",   status: "connected", logo: "🔵", users: 96, synced: "live" },
+    { id: "i6",  name: "Jira",             cat: "Project Mgmt",   status: "connected", logo: "🔷", users: 24, synced: "10m ago" },
+    { id: "i7",  name: "Datadog",          cat: "Monitoring",     status: "connected", logo: "📊", users: 8,  synced: "live" },
+    { id: "i8",  name: "HubSpot",          cat: "Marketing",      status: "degraded",  logo: "🟠", users: 15, synced: "1h ago" },
+    { id: "i9",  name: "Notion",           cat: "Knowledge",      status: "connected", logo: "⬛", users: 67, synced: "live" },
+    { id: "i10", name: "AWS",              cat: "Infrastructure", status: "connected", logo: "🟡", users: 6,  synced: "live" },
+  ],
+  notifications: [
+    { id: "n1", sev: "high",   title: "Auth service latency spike",   body: "P95 latency >2s for 8 minutes.",     time: "3m ago", read: false },
+    { id: "n2", sev: "medium", title: "HubSpot sync degraded",         body: "Last successful sync 1hr ago.",       time: "1h ago", read: false },
+    { id: "n3", sev: "low",    title: "ISO audit 95% complete",        body: "1 control remaining before sign-off.", time: "2h ago", read: false },
+    { id: "n4", sev: "low",    title: "Monthly backup complete",       body: "3.2GB archived to S3.",                time: "4h ago", read: true },
+    { id: "n5", sev: "medium", title: "Q2 pipeline at 74% of target",  body: "Sales forecast updated.",             time: "5h ago", read: true },
+  ],
+  chats: {
+    ag1: [
+      { role: "assistant", name: "SalesGPT", content: "Good morning. Your pipeline has 3 deals closing this week worth $84K combined. Acme Corp needs a follow-up — last contact was 6 days ago.", time: "09:00" },
+      { role: "user",      name: "You",      content: "Draft a follow-up email for Acme Corp.", time: "09:02" },
+      { role: "assistant", name: "SalesGPT", content: "Subject: Following up — EcoOS Enterprise Proposal\n\nHi [Name],\n\nI wanted to follow up on the proposal we shared last week. Given your team's goals around centralising operations, I believe EcoOS could save you significant coordination overhead.\n\nAre you available for a 20-minute call this Thursday?\n\nBest,\n[Your name]", time: "09:02" },
+    ],
+    ag2: [
+      { role: "assistant", name: "DataOracle", content: "Q2 revenue forecast: $1.14M (↑9% vs Q1). Confidence: 87%. Primary driver: EMEA pipeline converted at 34%.", time: "08:30" },
+      { role: "user",      name: "You",        content: "What's dragging the confidence below 90%?", time: "10:00" },
+      { role: "assistant", name: "DataOracle", content: "Two factors:\n1. EMEA deal cycle uncertainty (σ = 18 days)\n2. Three enterprise deals with incomplete qualification scores\n\nIf those three deals close, forecast rises to $1.28M with 94% confidence.", time: "10:01" },
+    ],
+    ag3: [{ role: "assistant", name: "DevAssist",    content: "Ready. 2 open PRs await review. auth-service has a memory leak in the connection pool — want me to flag it for the team?", time: "09:45" }],
+    ag4: [{ role: "assistant", name: "SupportBot",   content: "Handling 12 active tickets. 3 escalated in the past hour. Average first-response: 4m 22s.", time: "Now" }],
+    ag5: [{ role: "assistant", name: "ComplianceAI", content: "Paused pending ISO audit sign-off. 47/48 controls mapped. Resume after audit on Apr 22?", time: "Yesterday" }],
+  },
+};
+
+export const FILE_FOLDERS = [
+  { id: "root",     label: "All Files",  icon: "🗂" },
+  { id: "projects", label: "Projects",   icon: "📁" },
+  { id: "reports",  label: "Reports",    icon: "📊" },
+  { id: "ai",       label: "AI Outputs", icon: "◈" },
+  { id: "legal",    label: "Legal",      icon: "⚖" },
+  { id: "shared",   label: "Shared",     icon: "👥" },
+  { id: "starred",  label: "Starred",    icon: "★" },
+  { id: "trash",    label: "Trash",      icon: "🗑" },
+];
+
+export const FILE_DATA = {
+  root: [
+    { id: "f1", name: "Q2 Forecast.xlsx",        type: "spreadsheet", size: "284 KB",  modified: "Apr 18, 2026", owner: "EcoAdmin",    shared: 3 },
+    { id: "f2", name: "Amazon Basin Survey.pdf", type: "pdf",         size: "12.4 MB", modified: "Apr 17, 2026", owner: "Aria Chen",   shared: 8 },
+    { id: "f3", name: "Species ID Model v2.4",   type: "archive",     size: "892 MB",  modified: "Apr 16, 2026", owner: "Marco Reyes", shared: 2 },
+    { id: "f4", name: "Grant Application.docx",  type: "document",    size: "1.2 MB",  modified: "Apr 14, 2026", owner: "EcoAdmin",    shared: 5 },
+    { id: "f5", name: "Sensor Grid Photos.zip",  type: "archive",     size: "340 MB",  modified: "Apr 12, 2026", owner: "Sven Larsson", shared: 1 },
+    { id: "f6", name: "Q1 Board Report.pdf",     type: "pdf",         size: "4.8 MB",  modified: "Apr 10, 2026", owner: "EcoAdmin",    shared: 12 },
+    { id: "f7", name: "ClimateOracle Config.json", type: "code",      size: "18 KB",   modified: "Apr 9, 2026",  owner: "Priya Singh", shared: 0 },
+    { id: "f8", name: "Platform Architecture.png", type: "image",     size: "2.1 MB",  modified: "Apr 8, 2026",  owner: "EcoAdmin",    shared: 4 },
+  ],
+  projects: [
+    { id: "f9",  name: "Project Charter.docx", type: "document",    size: "94 KB",  modified: "Apr 15, 2026", owner: "EcoAdmin",    shared: 6 },
+    { id: "f10", name: "Gantt Chart.xlsx",     type: "spreadsheet", size: "156 KB", modified: "Apr 13, 2026", owner: "Marco Reyes", shared: 9 },
+  ],
+  reports: [
+    { id: "f11", name: "Monthly Report Mar 2026.pdf",  type: "pdf",         size: "3.2 MB", modified: "Apr 1, 2026",  owner: "EcoAdmin",  shared: 14 },
+    { id: "f12", name: "Biodiversity Index 2026.xlsx", type: "spreadsheet", size: "512 KB", modified: "Mar 28, 2026", owner: "Aria Chen", shared: 7 },
+  ],
+  ai: [
+    { id: "f13", name: "EcoScan Results — Grid 7B.json", type: "code", size: "2.4 MB", modified: "Apr 18, 2026", owner: "EcoScan GPT-4o",  shared: 3 },
+    { id: "f14", name: "Climate Forecast Q2.pdf",        type: "pdf",  size: "890 KB", modified: "Apr 17, 2026", owner: "ClimateOracle",   shared: 2 },
+  ],
+};
+
+export const FILE_ICONS = { pdf: "📄", document: "📝", spreadsheet: "📊", image: "🖼", archive: "📦", code: "{ }", video: "🎬", default: "📄" };
