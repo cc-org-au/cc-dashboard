@@ -402,14 +402,15 @@ export default function FilesScreen({ T, isMobile }) {
                     <th
                       key={h}
                       style={{
-                        padding: "10px 16px",
+                        padding: "12px 18px",
                         textAlign: "left",
                         fontSize: 12,
                         fontWeight: 600,
                         color: T.t2,
-                        borderBottom: `1px solid ${T.border}`,
+                        borderBottom: `1px solid ${T.borderMuted ?? T.border}`,
                         background: T.surface,
                         whiteSpace: "nowrap",
+                        letterSpacing: "0.01em",
                       }}
                     >
                       {h}
@@ -421,23 +422,24 @@ export default function FilesScreen({ T, isMobile }) {
                 </tr>
               </thead>
               <tbody>
-                {files.map((f) => (
+                {files.map((f, fi) => (
                   <tr
                     key={f.id}
                     onClick={() => setSelectedFile(f.id === selectedFile ? null : f.id)}
                     style={{
                       background: selectedFile === f.id ? T.accentBg : "transparent",
                       cursor: "pointer",
-                      transition: "background .1s",
+                      transition: "background .12s ease",
                     }}
                     onMouseEnter={(e) => {
-                      if (selectedFile !== f.id) e.currentTarget.style.background = T.raised;
+                      if (selectedFile !== f.id) e.currentTarget.style.background = T.hover;
                     }}
                     onMouseLeave={(e) => {
-                      if (selectedFile !== f.id) e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.background =
+                        selectedFile === f.id ? T.accentBg : "transparent";
                     }}
                   >
-                    <td style={{ padding: "10px 16px", borderBottom: `1px solid ${T.border}`, maxWidth: 0 }}>
+                    <td style={{ padding: "14px 18px", borderBottom: fi < files.length - 1 ? `1px solid ${T.borderMuted ?? T.border}` : "none", maxWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                         <span
                           style={{
@@ -475,10 +477,10 @@ export default function FilesScreen({ T, isMobile }) {
                     </td>
                     <td
                       style={{
-                        padding: "10px 16px",
+                        padding: "14px 18px",
                         color: T.t3,
                         fontSize: 12,
-                        borderBottom: `1px solid ${T.border}`,
+                        borderBottom: fi < files.length - 1 ? `1px solid ${T.borderMuted ?? T.border}` : "none",
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -486,10 +488,10 @@ export default function FilesScreen({ T, isMobile }) {
                     </td>
                     <td
                       style={{
-                        padding: "10px 16px",
+                        padding: "14px 18px",
                         color: T.t2,
                         fontSize: 12,
-                        borderBottom: `1px solid ${T.border}`,
+                        borderBottom: fi < files.length - 1 ? `1px solid ${T.borderMuted ?? T.border}` : "none",
                       }}
                     >
                       {f.shared > 0 ? `${f.shared} people` : "Only you"}

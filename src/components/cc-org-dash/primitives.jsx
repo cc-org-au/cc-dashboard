@@ -250,42 +250,107 @@ export function Sparkline({ data, color, height = 28, width = 80 }) {
   );
 }
 
-// GitHub-style table
-export function Table({ cols, rows, T, onRow, emptyMsg = "No data" }) {
+/** Horizontal data table — airy cells, light row rules, accent selection (appointments-style). */
+export function Table({
+  cols,
+  rows,
+  T,
+  onRow,
+  emptyMsg = "No data",
+  variant = "card",
+  selectedId,
+  rowKey = "id",
+}) {
   const [hov, setHov] = useState(null);
+  const rowLine = `1px solid ${T.borderMuted ?? T.border}`;
+  const wrap =
+    variant === "card"
+      ? {
+          borderRadius: 8,
+          border: `1px solid ${T.border}`,
+          overflow: "hidden",
+          background: T.surface,
+        }
+      : {};
+
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            {cols.map(c => (
-              <th key={c.key} style={{
-                padding: "8px 16px", textAlign: "left",
-                fontSize: 12, fontWeight: 600, color: T.t2,
-                borderBottom: `1px solid ${T.border}`, whiteSpace: "nowrap",
-                background: T.raised
-              }}>
-                {c.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 && (
-            <tr><td colSpan={cols.length} style={{ padding: 40, textAlign: "center", color: T.t3, fontSize: 13 }}>{emptyMsg}</td></tr>
-          )}
-          {rows.map((row, i) => (
-            <tr key={row.id || i} onMouseEnter={() => setHov(i)} onMouseLeave={() => setHov(null)} onClick={() => onRow?.(row)}
-              style={{ background: hov === i ? T.raised : "transparent", cursor: onRow ? "pointer" : "default", transition: "background 0.1s" }}>
-              {cols.map(c => (
-                <td key={c.key} style={{ padding: "10px 16px", fontSize: 13, color: c.muted ? T.t2 : T.t1, borderBottom: `1px solid ${T.border}`, verticalAlign: "middle" }}>
-                  {c.render ? c.render(row[c.key], row) : row[c.key] ?? <span style={{ color: T.t4 }}>—</span>}
-                </td>
+    <div style={wrap}>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              {cols.map((c) => (
+                <th
+                  key={c.key}
+                  style={{
+                    padding: "12px 18px",
+                    textAlign: "left",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: T.t2,
+                    borderBottom: rowLine,
+                    whiteSpace: "nowrap",
+                    background: T.surface,
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  {c.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td
+                  colSpan={cols.length}
+                  style={{ padding: 40, textAlign: "center", color: T.t3, fontSize: 13 }}
+                >
+                  {emptyMsg}
+                </td>
+              </tr>
+            )}
+            {rows.map((row, i) => {
+              const rid = row[rowKey];
+              const selected = selectedId != null && rid === selectedId;
+              const rowBg = selected
+                ? T.accentBg
+                : hov === i
+                  ? T.hover
+                  : "transparent";
+              return (
+                <tr
+                  key={rid ?? i}
+                  onMouseEnter={() => setHov(i)}
+                  onMouseLeave={() => setHov(null)}
+                  onClick={() => onRow?.(row)}
+                  style={{
+                    background: rowBg,
+                    cursor: onRow ? "pointer" : "default",
+                    transition: "background 0.12s ease",
+                  }}
+                >
+                  {cols.map((c) => (
+                    <td
+                      key={c.key}
+                      style={{
+                        padding: "14px 18px",
+                        fontSize: 13,
+                        color: c.muted ? T.t2 : T.t1,
+                        borderBottom: i < rows.length - 1 ? rowLine : "none",
+                        verticalAlign: "middle",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {c.render ? c.render(row[c.key], row) : row[c.key] ?? <span style={{ color: T.t4 }}>—</span>}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -354,47 +419,205 @@ export function SectionLabel({ children, T, action }) {
   );
 }
 
-// GitHub-style sub-nav tabs (like Code / Issues / PRs)
-export function SubNav({ T, tabs, active, onChange }) {
+/**
+ * Primary app tabs — active tab lifts with canvas fill and inverse-radius “scoops”
+ * at the bottom corners (connects visually to the page below).
+ */
+export function PrimaryNavTabs({ T, tabs, active, onChange, isMobile, leading }) {
+  const R = 11;
+  const fill = T.canvas;
+  const padX = isMobile ? 10 : 13;
+  const padY = isMobile ? 9 : 10;
+
   return (
-    <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${T.border}`, paddingLeft: 4, overflowX: "auto", overflowY: "hidden", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }}>
-      {tabs.map(t => {
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-end",
+        gap: 6,
+        padding: isMobile ? "6px 8px 0" : "8px 12px 0",
+        overflowX: "auto",
+        overflowY: "hidden",
+        WebkitOverflowScrolling: "touch",
+        scrollbarWidth: "thin",
+        minHeight: isMobile ? 46 : 48,
+      }}
+    >
+      {leading != null && (
+        <div style={{ flexShrink: 0, paddingBottom: 0, display: "flex", alignItems: "flex-end" }}>{leading}</div>
+      )}
+      {tabs.map((t) => {
         const isActive = active === t.id;
         return (
-          <button key={t.id} onClick={() => onChange(t.id)}
+          <button
+            key={t.id}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange(t.id);
+            }}
             style={{
-              padding: "8px 14px",
-              display: "flex", alignItems: "center", gap: 7,
-              background: isActive ? T.surface : "transparent",
+              position: "relative",
+              zIndex: isActive ? 2 : 1,
+              padding: `${padY}px ${padX}px`,
+              display: "flex",
+              alignItems: "center",
+              gap: isMobile ? 5 : 8,
+              background: isActive ? fill : "transparent",
               border: "none",
-              borderBottom: isActive ? `2px solid ${T.amber}` : "2px solid transparent",
-              marginBottom: -1,
-              color: isActive ? T.t1 : T.t2,
+              borderRadius: isActive ? `${R}px ${R}px 0 0` : 0,
+              marginBottom: 0,
+              color: isActive ? T.t1 : T.navText ?? T.t2,
+              fontSize: isMobile ? 13 : 14,
+              fontWeight: isActive ? 600 : 500,
+              cursor: "pointer",
+              fontFamily: F.sans,
+              transition: "color .12s, background .12s",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              boxShadow: isActive ? `0 1px 0 0 ${fill}` : "none",
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) e.currentTarget.style.color = T.t1;
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) e.currentTarget.style.color = T.navText ?? T.t2;
+            }}
+          >
+            {isActive && (
+              <>
+                <span
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    left: -R,
+                    bottom: 0,
+                    width: R,
+                    height: R,
+                    pointerEvents: "none",
+                    borderBottomRightRadius: R,
+                    boxShadow: `${R}px ${R}px 0 ${R}px ${fill}`,
+                  }}
+                />
+                <span
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    right: -R,
+                    bottom: 0,
+                    width: R,
+                    height: R,
+                    pointerEvents: "none",
+                    borderBottomLeftRadius: R,
+                    boxShadow: `${-R}px ${R}px 0 ${R}px ${fill}`,
+                  }}
+                />
+              </>
+            )}
+            <span style={{ display: "flex", color: isActive ? T.t2 : T.t3, position: "relative", zIndex: 1 }}>
+              {t.icon}
+            </span>
+            {(!isMobile || isActive) && (
+              <span style={{ position: "relative", zIndex: 1, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                {t.label}
+                {t.badge != null && t.badge !== 0 && (
+                  <span
+                    style={{
+                      background: T.accent,
+                      color: "#fff",
+                      borderRadius: 99,
+                      padding: "1px 6px",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {t.badge}
+                  </span>
+                )}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Secondary row — capsule pills on a soft bar (mirrors medical-app subnav). */
+export function SubNav({ T, tabs, active, onChange }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        flexWrap: "wrap",
+        padding: "10px 4px 12px",
+        marginBottom: 4,
+        background: T.raised,
+        border: `1px solid ${T.borderMuted ?? T.border}`,
+        borderRadius: 12,
+      }}
+    >
+      {tabs.map((t) => {
+        const isActive = active === t.id;
+        return (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onChange(t.id)}
+            style={{
+              padding: "6px 14px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              background: isActive ? T.accentBg : "transparent",
+              border: isActive ? `1px solid ${T.accentBorder}` : "1px solid transparent",
+              borderRadius: 9999,
+              color: isActive ? T.accent : T.t2,
               fontSize: 14,
-              fontWeight: isActive ? 600 : 400,
+              fontWeight: isActive ? 600 : 500,
               cursor: "pointer",
               fontFamily: F.sans,
               transition: "all .12s",
               whiteSpace: "nowrap",
-              flexShrink: 0
+              flexShrink: 0,
             }}
-            onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = T.t1; }}
-            onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = T.t2; }}>
-            {t.icon && <span style={{ display: "flex", color: isActive ? T.t2 : T.t3 }}>{t.icon}</span>}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.background = T.hover;
+                e.currentTarget.style.color = T.t1;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = T.t2;
+              }
+            }}
+          >
+            {t.icon && (
+              <span style={{ display: "flex", color: isActive ? T.accent : T.t3 }}>{t.icon}</span>
+            )}
             <span>{t.label}</span>
             {t.count != null && (
-              <span style={{
-                background: T.raised,
-                border: `1px solid ${T.border}`,
-                borderRadius: 999,
-                padding: "0 7px",
-                fontSize: 12,
-                fontWeight: 500,
-                color: T.t2,
-                lineHeight: "18px",
-                minWidth: 20,
-                textAlign: "center"
-              }}>{t.count}</span>
+              <span
+                style={{
+                  background: isActive ? `${T.accent}22` : T.surface,
+                  border: `1px solid ${isActive ? T.accentBorder : T.border}`,
+                  borderRadius: 999,
+                  padding: "0 7px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: isActive ? T.accent : T.t2,
+                  lineHeight: "18px",
+                  minWidth: 20,
+                  textAlign: "center",
+                }}
+              >
+                {t.count}
+              </span>
             )}
           </button>
         );

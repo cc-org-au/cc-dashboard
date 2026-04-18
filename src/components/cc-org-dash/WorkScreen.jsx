@@ -52,8 +52,7 @@ export default function WorkScreen({ T, isMobile }) {
 
       <div style={{ paddingTop: 20 }}>
         {view === "projects" && (
-          <Surface T={T}>
-            <Table T={T} onRow={setSelected} rows={DB.projects} cols={[
+          <Table T={T} variant="card" selectedId={selected?.id} onRow={setSelected} rows={DB.projects} cols={[
               { key: "name", label: "Project", render: (v, r) => <div style={{ display: "flex", alignItems: "center", gap: 8 }}><Dot status={r.status} T={T} /><span style={{ color: T.accent, fontWeight: 600 }}>{v}</span></div> },
               { key: "dept", label: "Department", muted: true },
               { key: "owner", label: "Owner", muted: true },
@@ -69,7 +68,6 @@ export default function WorkScreen({ T, isMobile }) {
               },
               { key: "due", label: "Due", render: v => <span style={{ color: T.t3, fontFamily: F.mono, fontSize: 12 }}>{v}</span>, muted: true },
             ]} />
-          </Surface>
         )}
 
         {view === "tasks" && (
@@ -81,8 +79,7 @@ export default function WorkScreen({ T, isMobile }) {
                 </Btn>
               ))}
             </div>
-            <Surface T={T}>
-              <Table T={T} onRow={setSelected} rows={filteredTasks} cols={[
+            <Table T={T} variant="card" selectedId={selected?.id} onRow={setSelected} rows={filteredTasks} cols={[
                 { key: "title", label: "Title", render: (v, r) => <div style={{ display: "flex", alignItems: "center", gap: 8 }}><Dot status={r.status} T={T} /><span style={{ color: T.accent, fontWeight: 500 }}>{v}</span></div> },
                 { key: "project", label: "Project", muted: true },
                 { key: "assignee", label: "Assignee", render: v => <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Avi name={v} size={20} /><span style={{ color: T.t2, fontSize: 12 }}>{v.split(" ")[0]}</span></div> },
@@ -90,7 +87,6 @@ export default function WorkScreen({ T, isMobile }) {
                 { key: "status", label: "Status", render: v => <Badge T={T} color={sc[v]}>{v.replace("_", " ")}</Badge> },
                 { key: "due", label: "Due", render: v => <span style={{ color: T.t3, fontFamily: F.mono, fontSize: 12 }}>{v}</span>, muted: true },
               ]} />
-            </Surface>
           </div>
         )}
 

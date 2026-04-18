@@ -48,8 +48,8 @@ export default function HomeScreen({ T, isMobile }) {
         {/* Two columns */}
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 340px", gap: 16, alignItems: "start" }}>
           {/* Projects */}
-          <Surface T={T}>
-            <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.raised, borderRadius: "6px 6px 0 0" }}>
+          <Surface T={T} style={{ borderRadius: 8, overflow: "hidden", padding: 0 }}>
+            <div style={{ padding: "12px 18px", borderBottom: `1px solid ${T.borderMuted ?? T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.surface }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <GitPullRequest size={15} color={T.t2} />
                 <span style={{ color: T.t1, fontSize: 14, fontWeight: 600 }}>Active Projects</span>
@@ -57,10 +57,13 @@ export default function HomeScreen({ T, isMobile }) {
               </div>
               <Btn T={T} small variant="ghost">View all →</Btn>
             </div>
-            {DB.projects.slice(0, 4).map((p, i) => (
-              <div key={p.id} onClick={() => setDetailProject(p)} style={{ padding: "14px 16px", borderBottom: i < 3 ? `1px solid ${T.border}` : "none", cursor: "pointer", transition: "background .12s" }}
-                onMouseEnter={e => e.currentTarget.style.background = T.raised}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+            {DB.projects.slice(0, 4).map((p, i) => {
+              const rowSel = detailProject?.id === p.id;
+              const rowLine = `1px solid ${T.borderMuted ?? T.border}`;
+              return (
+              <div key={p.id} onClick={() => setDetailProject(p)} style={{ padding: "14px 18px", borderBottom: i < 3 ? rowLine : "none", cursor: "pointer", transition: "background .12s", background: rowSel ? T.accentBg : "transparent" }}
+                onMouseEnter={e => { if (!rowSel) e.currentTarget.style.background = T.hover; }}
+                onMouseLeave={e => { e.currentTarget.style.background = rowSel ? T.accentBg : "transparent"; }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: 1 }}>
                     <Dot status={p.status} T={T} />
@@ -75,7 +78,7 @@ export default function HomeScreen({ T, isMobile }) {
                 </div>
                 <Progress value={p.progress} color={statusColor[p.status]} T={T} />
               </div>
-            ))}
+            );})}
           </Surface>
 
           {/* Activity */}

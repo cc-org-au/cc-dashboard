@@ -61,19 +61,20 @@ export default function AccountScreen({ T, setTab, isMobile }) {
       </Surface>
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "192px 1fr 268px", gap: 14, alignItems: "start" }}>
-        <Surface T={T} style={{ padding: 0, overflow: "hidden" }}>
+        <Surface T={T} style={{ padding: "12px 10px", overflow: "hidden" }}>
           {sections.map(s => (
-            <button key={s.id} onClick={() => setActiveSection(s.id)}
+            <button key={s.id} type="button" onClick={() => setActiveSection(s.id)}
               style={{
-                width: "100%", padding: "11px 16px", background: "none", border: "none",
-                borderLeft: activeSection === s.id ? `3px solid ${T.accent}` : "3px solid transparent",
-                color: activeSection === s.id ? T.t1 : T.t2,
-                fontSize: 13, fontWeight: activeSection === s.id ? 600 : 400,
+                width: "100%", padding: "8px 14px", background: activeSection === s.id ? T.accentBg : "transparent",
+                border: activeSection === s.id ? `1px solid ${T.accentBorder}` : "1px solid transparent",
+                borderRadius: 999,
+                color: activeSection === s.id ? T.accent : T.t2,
+                fontSize: 13, fontWeight: activeSection === s.id ? 600 : 500,
                 cursor: "pointer", fontFamily: F.sans, textAlign: "left", transition: "all .12s",
-                borderBottom: `1px solid ${T.border}`
+                marginBottom: 8,
               }}
               onMouseEnter={e => activeSection !== s.id && (e.currentTarget.style.background = T.hover)}
-              onMouseLeave={e => activeSection !== s.id && (e.currentTarget.style.background = "none")}>
+              onMouseLeave={e => activeSection !== s.id && (e.currentTarget.style.background = "transparent")}>
               {s.label}
             </button>
           ))}

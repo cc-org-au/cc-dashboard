@@ -28,15 +28,13 @@ export default function PeopleScreen({ T, isMobile }) {
 
       <div style={{ paddingTop: 20 }}>
         {subTab === "people" && (
-          <Surface T={T}>
-            <Table T={T} onRow={setSelected} rows={DB.people} cols={[
+          <Table T={T} variant="card" selectedId={selected?.id} onRow={setSelected} rows={DB.people} cols={[
               { key: "name", label: "Name", render: (v) => <div style={{ display: "flex", alignItems: "center", gap: 10 }}><Avi name={v} size={28} /><span style={{ fontWeight: 600, color: T.accent }}>{v}</span></div> },
               { key: "role", label: "Role", muted: true },
               { key: "dept", label: "Department", muted: true },
               { key: "email", label: "Email", render: v => <span style={{ color: T.t2, fontFamily: F.mono, fontSize: 12 }}>{v}</span> },
               { key: "status", label: "Status", render: v => <div style={{ display: "flex", alignItems: "center", gap: 6 }}><Dot status={v} T={T} /><span style={{ color: T.t2, fontSize: 12 }}>{v}</span></div> },
             ]} />
-          </Surface>
         )}
 
         {subTab === "teams" && (
@@ -56,8 +54,7 @@ export default function PeopleScreen({ T, isMobile }) {
         )}
 
         {subTab === "invites" && (
-          <Surface T={T}>
-            <Table T={T} rows={[
+          <Table T={T} variant="card" rows={[
               { id: 1, email: "alex@company.io", role: "Member", sent: "2 days ago", status: "pending" },
               { id: 2, email: "jamie@company.io", role: "Admin", sent: "5 hours ago", status: "pending" },
             ]} cols={[
@@ -66,7 +63,6 @@ export default function PeopleScreen({ T, isMobile }) {
               { key: "sent", label: "Sent", muted: true },
               { key: "status", label: "Status", render: v => <Badge T={T} color={T.amber}>{v}</Badge> },
             ]} />
-          </Surface>
         )}
       </div>
 

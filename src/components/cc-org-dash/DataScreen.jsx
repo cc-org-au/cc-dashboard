@@ -50,8 +50,8 @@ export default function DataScreen({ T, isMobile }) {
         )}
 
         {(subTab === "traces" || subTab === "metrics") && (
-          <Surface T={T}>
-            <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.raised, borderRadius: "6px 6px 0 0" }}>
+          <Surface T={T} style={{ borderRadius: 8, overflow: "hidden", padding: 0 }}>
+            <div style={{ padding: "12px 18px", borderBottom: `1px solid ${T.borderMuted ?? T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: T.surface, borderRadius: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <Activity size={15} color={T.t2} />
                 <span style={{ color: T.t1, fontSize: 14, fontWeight: 600 }}>AI Run Traces</span>
@@ -62,7 +62,7 @@ export default function DataScreen({ T, isMobile }) {
                 <Badge T={T} color={T.red}>1 error</Badge>
               </div>
             </div>
-            <Table T={T} onRow={setSelected} rows={[
+            <Table T={T} variant="flush" selectedId={selected?.id} onRow={setSelected} rows={[
               { id: "tr1", name: "sales_forecast_run",  agent: "DataOracle",    model: "claude-3.5",    tokens: "5,210", cost: "$0.12",  latency: "2.1s", status: "success", time: "10:03" },
               { id: "tr2", name: "deal_summary_batch",  agent: "SalesGPT",      model: "gpt-4o",        tokens: "2,847", cost: "$0.048", latency: "1.2s", status: "success", time: "09:16" },
               { id: "tr3", name: "support_triage_x42",  agent: "SupportBot",    model: "gpt-4o",        tokens: "892",   cost: "$0.008", latency: "0.8s", status: "success", time: "10:45" },

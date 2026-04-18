@@ -39,21 +39,21 @@ export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
         {/* GitHub-style left sidebar nav */}
         <div style={{ width: isMobile ? "100%" : 220, flexShrink: 0, display: isMobile ? "flex" : "block", gap: 4, overflowX: isMobile ? "auto" : "visible", paddingBottom: isMobile ? 4 : 0 }}>
           {settingsTabs.map(st => (
-            <button key={st.id} onClick={() => setTab(st.id)}
+            <button key={st.id} type="button" onClick={() => setTab(st.id)}
               style={{
                 width: isMobile ? "auto" : "100%", flexShrink: 0,
                 display: "flex", alignItems: "center", gap: 10,
-                padding: "6px 10px", marginBottom: 2, whiteSpace: "nowrap",
-                background: tab === st.id ? T.accentBg : "none",
-                border: "none", borderRadius: 6,
-                color: tab === st.id ? T.t1 : T.t2,
-                fontSize: 14, fontWeight: tab === st.id ? 600 : 400,
-                cursor: "pointer", fontFamily: F.sans, textAlign: "left", transition: "all .1s",
-                borderLeft: tab === st.id ? `2px solid ${T.accent}` : "2px solid transparent"
+                padding: "8px 14px", marginBottom: 6, whiteSpace: "nowrap",
+                background: tab === st.id ? T.accentBg : "transparent",
+                border: tab === st.id ? `1px solid ${T.accentBorder}` : "1px solid transparent",
+                borderRadius: 999,
+                color: tab === st.id ? T.accent : T.t2,
+                fontSize: 14, fontWeight: tab === st.id ? 600 : 500,
+                cursor: "pointer", fontFamily: F.sans, textAlign: "left", transition: "all .12s",
               }}
               onMouseEnter={e => tab !== st.id && (e.currentTarget.style.background = T.hover)}
-              onMouseLeave={e => tab !== st.id && (e.currentTarget.style.background = "none")}>
-              <span style={{ display: "flex", color: tab === st.id ? T.t1 : T.t3 }}>{st.icon}</span>
+              onMouseLeave={e => tab !== st.id && (e.currentTarget.style.background = "transparent")}>
+              <span style={{ display: "flex", color: tab === st.id ? T.accent : T.t3 }}>{st.icon}</span>
               {st.label}
             </button>
           ))}

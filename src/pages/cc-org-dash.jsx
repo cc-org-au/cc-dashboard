@@ -1,6 +1,6 @@
 // cc-org-dash — GitHub-inspired Business Command Center
 import { useState, useEffect } from "react";
-import { THEMES, Avi, F } from "../components/cc-org-dash/primitives";
+import { THEMES, Avi, F, PrimaryNavTabs } from "../components/cc-org-dash/primitives";
 import { DB } from "../components/cc-org-dash/data";
 import HomeScreen from "../components/cc-org-dash/HomeScreen";
 import WorkScreen from "../components/cc-org-dash/WorkScreen";
@@ -88,14 +88,8 @@ export default function CcOrgDash() {
       {/* GitHub-style top nav */}
       <div style={{ background: T.nav, borderBottom: `1px solid ${T.border}`, color: T.t1, flexShrink: 0 }}>
         <div style={{ height: isMobile ? 52 : 60, display: "flex", alignItems: "center", padding: isMobile ? "0 10px" : "0 16px", gap: isMobile ? 8 : 16 }}>
-          {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 7 : 10, flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: isMobile ? 26 : 30, height: isMobile ? 26 : 30, borderRadius: 8, background: `linear-gradient(135deg, ${T.accent}, ${T.purple})`, boxShadow: T.shadowMd }}>
-              <svg width={isMobile ? 15 : 18} height={isMobile ? 15 : 18} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M8 12h8M12 8v8" />
-              </svg>
-            </div>
+          {/* Wordmark */}
+          <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <span style={{ color: T.t1, fontSize: isMobile ? 13 : 15, fontWeight: 700, letterSpacing: "-0.01em", fontFamily: F.mono }}>cc-org-dash</span>
           </div>
 
@@ -185,36 +179,17 @@ export default function CcOrgDash() {
           </div>
         </div>
 
-        {/* GitHub-style primary tab strip */}
-        <div style={{ display: "flex", alignItems: "center", gap: 0, padding: isMobile ? "0 6px" : "0 16px", overflowX: "auto", overflowY: "hidden", WebkitOverflowScrolling: "touch", scrollbarWidth: "thin" }}>
-          {TABS.map(t => {
-            const active = tab === t.id;
-            return (
-              <button key={t.id} onClick={e => { e.stopPropagation(); setTab(t.id); }}
-                style={{
-                  padding: isMobile ? "8px 10px" : "8px 12px",
-                  display: "flex", alignItems: "center", gap: isMobile ? 5 : 8,
-                  background: "transparent",
-                  border: "none",
-                  borderBottom: active ? `2px solid ${T.amber}` : "2px solid transparent",
-                  marginBottom: -1,
-                  color: active ? T.t1 : T.t2,
-                  fontSize: isMobile ? 13 : 14,
-                  fontWeight: active ? 600 : 400,
-                  cursor: "pointer",
-                  fontFamily: F.sans,
-                  transition: "all .12s",
-                  whiteSpace: "nowrap",
-                  position: "relative",
-                  flexShrink: 0
-                }}
-                onMouseEnter={e => { if (!active) e.currentTarget.style.color = T.t1; }}
-                onMouseLeave={e => { if (!active) e.currentTarget.style.color = T.t2; }}>
-                <span style={{ display: "flex", color: active ? T.t2 : T.t3 }}>{t.icon}</span>
-                {(!isMobile || active) && t.label}
-              </button>
-            );
-          })}
+        {/* Primary routes — notched “lifted” tabs */}
+        <div style={{ borderTop: `1px solid ${T.borderMuted ?? T.border}` }}>
+          <PrimaryNavTabs
+            T={T}
+            tabs={TABS.map((t) =>
+              t.id === "inbox" && unread > 0 ? { ...t, badge: unread } : t
+            )}
+            active={tab}
+            onChange={setTab}
+            isMobile={isMobile}
+          />
         </div>
       </div>
 
