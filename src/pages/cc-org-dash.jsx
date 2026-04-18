@@ -289,11 +289,14 @@ export default function CcOrgDash() {
             style={{
               flex: "1 1 0%",
               minWidth: 0,
+              minHeight: 0,
               maxWidth: "100%",
               overflow: "auto",
               WebkitOverflowScrolling: "touch",
               display: "flex",
-              justifyContent: "center",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "flex-start",
               boxSizing: "border-box",
             }}
             onClick={close}
@@ -302,8 +305,13 @@ export default function CcOrgDash() {
               style={{
                 maxWidth: 1280,
                 width: "100%",
+                alignSelf: "center",
                 padding: isMobile ? "16px 12px" : "24px 28px",
                 boxSizing: "border-box",
+                flex: 1,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               {tab === "home"         && <HomeScreen T={T} isMobile={isMobile} />}

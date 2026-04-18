@@ -210,16 +210,17 @@ export default function InboxScreen({ T, isMobile }) {
     <div
       style={{
         flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         gap: 10,
-        padding: 40,
+        padding: 24,
         background: T.canvas,
         color: T.t3,
         textAlign: "center",
-        minHeight: 200,
+        overflow: "auto",
       }}
     >
       <Inbox size={36} color={T.t4} />
@@ -600,7 +601,16 @@ export default function InboxScreen({ T, isMobile }) {
   );
 
   const DetailPanel = thread && (
-    <div style={{ padding: "12px 14px", overflow: "auto", height: "100%", boxSizing: "border-box" }}>
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        overflow: "auto",
+        WebkitOverflowScrolling: "touch",
+        padding: "12px 14px",
+        boxSizing: "border-box",
+      }}
+    >
       {detailOpen && (
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -715,7 +725,7 @@ export default function InboxScreen({ T, isMobile }) {
           <ChevronLeft size={18} />
         </button>
       )}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.accent }}>{thread.ticketId}</span>
           <Badge T={T} color={statusColor(T, thread.status)}>{thread.status.replace("_", " ")}</Badge>
@@ -748,7 +758,7 @@ export default function InboxScreen({ T, isMobile }) {
   );
 
   const MessageArea = (
-    <div style={{ flex: 1, overflow: "auto", padding: "14px 16px", background: T.canvas }}>
+    <div style={{ flex: 1, minHeight: 0, overflow: "auto", WebkitOverflowScrolling: "touch", padding: "14px 16px", background: T.canvas }}>
       <div
         style={{
           textAlign: "center",
@@ -871,7 +881,7 @@ export default function InboxScreen({ T, isMobile }) {
   );
 
   const Composer = (
-    <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.border}`, flexShrink: 0, background: T.surface }}>
+    <div style={{ padding: "10px 14px", borderTop: `1px solid ${T.border}`, flexShrink: 0, background: T.surface, minWidth: 0 }}>
       <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
         <button
           type="button"
@@ -970,8 +980,18 @@ export default function InboxScreen({ T, isMobile }) {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
+        minHeight: 0,
+        width: "100%",
+        overflow: "hidden",
+        gap: 0,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8, flexShrink: 0 }}>
         <div>
           <div style={{ color: T.t1, fontSize: 24, fontWeight: 600, letterSpacing: "-0.01em" }}>Inbox</div>
           <div style={{ color: T.t2, fontSize: 13, marginTop: 2 }}>Ticketed conversations across workspaces</div>
@@ -988,14 +1008,16 @@ export default function InboxScreen({ T, isMobile }) {
         </div>
       </div>
 
-      <SubNav T={T} tabs={inboxSubTabs} active={subTab} onChange={setSubTab} />
+      <div style={{ flexShrink: 0 }}>
+        <SubNav T={T} tabs={inboxSubTabs} active={subTab} onChange={setSubTab} />
+      </div>
 
       <div
         style={{
           marginTop: 20,
+          flex: 1,
+          minHeight: 0,
           display: "flex",
-          height: isMobile ? "auto" : "calc(100vh - 220px)",
-          minHeight: isMobile ? 520 : 460,
           gap: 0,
           border: `1px solid ${T.border}`,
           borderRadius: 12,
@@ -1011,6 +1033,7 @@ export default function InboxScreen({ T, isMobile }) {
             style={{
               width: navW,
               flexShrink: 0,
+              minHeight: 0,
               transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
               borderRight: `1px solid ${T.borderMuted ?? T.border}`,
               background: T.raised,
@@ -1063,14 +1086,15 @@ export default function InboxScreen({ T, isMobile }) {
           <aside
             style={{
               width: isMobile ? "100%" : listW,
-              flexShrink: 0,
+              flex: isMobile ? "1 1 0%" : undefined,
+              flexShrink: isMobile ? 1 : 0,
+              minHeight: 0,
               transition: isMobile ? undefined : "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
               borderRight: isMobile ? "none" : `1px solid ${T.borderMuted ?? T.border}`,
               background: T.surface,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
-              minHeight: isMobile ? 280 : undefined,
             }}
           >
             <div
@@ -1110,19 +1134,28 @@ export default function InboxScreen({ T, isMobile }) {
 
         {/* Main chat */}
         {(!isMobile || mobilePane === "thread" || mobilePane === "detail") && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: isMobile ? 360 : undefined }}>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
             {(!isMobile || mobilePane === "thread") &&
               (thread && agent ? (
-                <>
+                <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                   {ChatHeader}
                   {MessageArea}
                   {Composer}
-                </>
+                </div>
               ) : (
                 EmptyMain
               ))}
             {isMobile && mobilePane === "detail" && (
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", background: T.raised }}>
+              <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", background: T.raised, overflow: "hidden" }}>
                 <div style={{ padding: 12, borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 8 }}>
                   <button
                     type="button"
@@ -1145,6 +1178,7 @@ export default function InboxScreen({ T, isMobile }) {
             style={{
               width: detailW,
               flexShrink: 0,
+              minHeight: 0,
               transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
               borderLeft: `1px solid ${T.borderMuted ?? T.border}`,
               background: T.raised,
