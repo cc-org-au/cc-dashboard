@@ -427,7 +427,16 @@ export default function InboxScreen({ T, isMobile }) {
   );
 
   const ThreadList = (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
+        minHeight: 0,
+        minWidth: 0,
+        overflow: "hidden",
+      }}
+    >
       <div style={{ padding: "10px 12px", borderBottom: `1px solid ${T.border}`, flexShrink: 0, background: T.surface }}>
         {listOpen && (
           <div style={{ position: "relative" }}>
@@ -499,7 +508,17 @@ export default function InboxScreen({ T, isMobile }) {
           </button>
         </div>
       )}
-      <div style={{ flex: 1, overflow: "auto", background: T.surface }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          minWidth: 0,
+          overflowX: "hidden",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+          background: T.surface,
+        }}
+      >
         {filteredThreads.length === 0 && (
           <div style={{ padding: 24, textAlign: "center", color: T.t3, fontSize: 13 }}>No tickets match filters</div>
         )}
@@ -597,7 +616,7 @@ export default function InboxScreen({ T, isMobile }) {
           );
         })}
       </div>
-    </>
+    </div>
   );
 
   const DetailPanel = thread && (
@@ -1031,15 +1050,19 @@ export default function InboxScreen({ T, isMobile }) {
         {!isMobile && (
           <aside
             style={{
+              flex: "0 0 auto",
               width: navW,
-              flexShrink: 0,
+              minWidth: 0,
+              maxWidth: navW,
               minHeight: 0,
-              transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+              transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
               borderRight: `1px solid ${T.borderMuted ?? T.border}`,
               background: T.raised,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
+              position: "relative",
+              zIndex: 2,
             }}
           >
             <div
@@ -1085,16 +1108,24 @@ export default function InboxScreen({ T, isMobile }) {
         {(!isMobile || mobilePane === "list") && (
           <aside
             style={{
-              width: isMobile ? "100%" : listW,
-              flex: isMobile ? "1 1 0%" : undefined,
-              flexShrink: isMobile ? 1 : 0,
+              ...(isMobile
+                ? { flex: "1 1 0%", width: "100%", minWidth: 0 }
+                : {
+                    flex: "0 0 auto",
+                    width: listW,
+                    maxWidth: listW,
+                    minWidth: 0,
+                  }),
+              flexShrink: isMobile ? 1 : undefined,
               minHeight: 0,
-              transition: isMobile ? undefined : "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+              transition: isMobile ? undefined : "width 0.22s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
               borderRight: isMobile ? "none" : `1px solid ${T.borderMuted ?? T.border}`,
               background: T.surface,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
+              position: "relative",
+              zIndex: 2,
             }}
           >
             <div
@@ -1136,12 +1167,16 @@ export default function InboxScreen({ T, isMobile }) {
         {(!isMobile || mobilePane === "thread" || mobilePane === "detail") && (
           <div
             style={{
-              flex: 1,
+              flex: "1 1 0%",
               minWidth: 0,
               minHeight: 0,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
+              background: T.surface,
+              position: "relative",
+              zIndex: 1,
+              boxSizing: "border-box",
             }}
           >
             {(!isMobile || mobilePane === "thread") &&
@@ -1176,15 +1211,19 @@ export default function InboxScreen({ T, isMobile }) {
         {!isMobile && (
           <aside
             style={{
+              flex: "0 0 auto",
               width: detailW,
-              flexShrink: 0,
+              minWidth: 0,
+              maxWidth: detailW,
               minHeight: 0,
-              transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+              transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
               borderLeft: `1px solid ${T.borderMuted ?? T.border}`,
               background: T.raised,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
+              position: "relative",
+              zIndex: 2,
             }}
           >
             <div
