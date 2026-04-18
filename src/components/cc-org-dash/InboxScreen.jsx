@@ -18,16 +18,24 @@ import {
   Mail,
   Users,
   ChevronDown,
+  Briefcase,
+  FolderOpen,
+  LayoutGrid,
+  List,
+  Clock,
+  AlertCircle,
+  GitBranch,
+  Plug,
+  CircleDot,
+  UserPlus,
 } from "./icons";
 
 const RAIL = {
   nav: { open: 236, closed: 50 },
-  list: { open: 308, closed: 50 },
   detail: { open: 292, closed: 50 },
 };
 const SW = 1.5;
 const LS_NAV = "ccod_inbox_rail_nav";
-const LS_LIST = "ccod_inbox_rail_list";
 const LS_DETAIL = "ccod_inbox_rail_detail";
 
 function loadRail(key, def = true) {
@@ -69,8 +77,8 @@ function noteKey(threadId) {
 
 export default function InboxScreen({ T, isMobile }) {
   const [navOpen, setNavOpen] = useState(() => loadRail(LS_NAV, true));
-  const [listOpen, setListOpen] = useState(() => loadRail(LS_LIST, true));
   const [detailOpen, setDetailOpen] = useState(() => loadRail(LS_DETAIL, true));
+  const [ticketsOpen, setTicketsOpen] = useState(false);
   const [workspaceId, setWorkspaceId] = useState("all");
   const [inboxView, setInboxView] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -84,20 +92,15 @@ export default function InboxScreen({ T, isMobile }) {
   const [chats, setChats] = useState(DB.chats);
   const [reactions, setReactions] = useState({});
   const [subTab, setSubTab] = useState("all");
-  const [mobilePane, setMobilePane] = useState("list");
+  const [mobilePane, setMobilePane] = useState("thread");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const endRef = useRef(null);
+  const ticketsBarRef = useRef(null);
 
   const persistNav = useCallback((v) => {
     setNavOpen(v);
     try {
       localStorage.setItem(LS_NAV, v ? "1" : "0");
-    } catch { /* ignore */ }
-  }, []);
-  const persistList = useCallback((v) => {
-    setListOpen(v);
-    try {
-      localStorage.setItem(LS_LIST, v ? "1" : "0");
     } catch { /* ignore */ }
   }, []);
   const persistDetail = useCallback((v) => {
@@ -163,8 +166,18 @@ export default function InboxScreen({ T, isMobile }) {
   useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), [activeAgent, chats, activeThreadId]);
 
   useEffect(() => {
-    if (isMobile && !thread && (mobilePane === "thread" || mobilePane === "detail")) {
-      setMobilePane("list");
+    function onDocDown(e) {
+      if (!ticketsOpen) return;
+      const el = ticketsBarRef.current;
+      if (el && !el.contains(e.target)) setTicketsOpen(false);
+    }
+    document.addEventListener("mousedown", onDocDown);
+    return () => document.removeEventListener("mousedown", onDocDown);
+  }, [ticketsOpen]);
+
+  useEffect(() => {
+    if (isMobile && !thread && mobilePane === "detail") {
+      setMobilePane("thread");
     }
   }, [isMobile, thread, mobilePane]);
 
@@ -230,7 +243,6 @@ export default function InboxScreen({ T, isMobile }) {
   );
 
   const navW = navOpen ? RAIL.nav.open : RAIL.nav.closed;
-  const listW = listOpen ? RAIL.list.open : RAIL.list.closed;
   const detailW = detailOpen ? RAIL.detail.open : RAIL.detail.closed;
 
   const NavSections = (
@@ -264,7 +276,11 @@ export default function InboxScreen({ T, isMobile }) {
                 transition: "background .12s, color .12s",
               }}
             >
-              <span style={{ fontSize: 14, opacity: 0.9 }}>◇</span>
+              {w.id === "all" ? (
+                <Briefcase size={16} strokeWidth={SW} color={on ? T.accent : T.t3} />
+              ) : (
+                <FolderOpen size={16} strokeWidth={SW} color={on ? T.accent : T.t3} />
+              )}
               {navOpen && <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.label}</span>}
             </button>
           );
@@ -278,6 +294,14 @@ export default function InboxScreen({ T, isMobile }) {
         ["unassigned", "Unassigned", INBOX_THREADS.filter((t) => t.assignee === "Unassigned").length],
       ].map(([id, label, count]) => {
         const on = inboxView === id;
+        const collapsedIcon =
+          id === "all" ? (
+            <Inbox size={17} strokeWidth={SW} color={on ? T.accent : T.t3} />
+          ) : id === "mine" ? (
+            <AtSign size={17} strokeWidth={SW} color={on ? T.accent : T.t3} />
+          ) : (
+            <UserPlus size={17} strokeWidth={SW} color={on ? T.accent : T.t3} />
+          );
         return (
           <button
             key={id}
@@ -308,7 +332,7 @@ export default function InboxScreen({ T, isMobile }) {
                 <span style={{ fontSize: 12, color: T.t4, fontVariantNumeric: "tabular-nums" }}>{count}</span>
               </>
             ) : (
-              <Inbox size={16} color={on ? T.accent : T.t3} />
+              collapsedIcon
             )}
           </button>
         );
@@ -342,7 +366,11 @@ export default function InboxScreen({ T, isMobile }) {
               width: "100%",
             }}
           >
-            {st !== "all" && <span style={{ width: 8, height: 8, borderRadius: 2, background: statusColor(T, st), flexShrink: 0 }} />}
+            {!navOpen && st === "all" && <List size={16} strokeWidth={SW} color={on ? T.accent : T.t3} />}
+            {!navOpen && st === "open" && <CircleDot size={16} strokeWidth={SW} color={T.accent} />}
+            {!navOpen && st === "pending" && <Clock size={16} strokeWidth={SW} color={on ? T.accent : T.amber} />}
+            {!navOpen && st === "on_hold" && <AlertCircle size={16} strokeWidth={SW} color={on ? T.accent : T.t3} />}
+            {navOpen && st !== "all" && <span style={{ width: 8, height: 8, borderRadius: 2, background: statusColor(T, st), flexShrink: 0 }} />}
             {navOpen && <span style={{ textTransform: "capitalize" }}>{lab}</span>}
           </button>
         );
@@ -380,10 +408,11 @@ export default function InboxScreen({ T, isMobile }) {
               width: "100%",
             }}
           >
-            {id === "email" && <Mail size={14} color={on ? T.accent : T.t3} />}
-            {id === "slack" && <span style={{ fontSize: 12 }}>#</span>}
-            {id === "web" && <span style={{ fontSize: 12 }}>⌁</span>}
-            {id === "all" && navOpen && <span>All</span>}
+            {id === "all" && !navOpen && <LayoutGrid size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
+            {id === "email" && <Mail size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
+            {id === "slack" && <GitBranch size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
+            {id === "web" && <Plug size={15} strokeWidth={SW} color={on ? T.accent : T.t3} />}
+            {id === "all" && navOpen && <span>All channels</span>}
             {id !== "all" && navOpen && <span>{lab}</span>}
           </button>
         );
@@ -438,33 +467,30 @@ export default function InboxScreen({ T, isMobile }) {
       }}
     >
       <div style={{ padding: "10px 12px", borderBottom: `1px solid ${T.border}`, flexShrink: 0, background: T.surface }}>
-        {listOpen && (
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.t3, display: "flex", pointerEvents: "none" }}>
-              <Search size={14} />
-            </span>
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search tickets & requesters…"
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                background: T.raised,
-                border: `1px solid ${T.border}`,
-                borderRadius: 8,
-                color: T.t1,
-                padding: "8px 10px 8px 32px",
-                fontSize: 13,
-                outline: "none",
-                fontFamily: F.sans,
-              }}
-            />
-          </div>
-        )}
+        <div style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.t3, display: "flex", pointerEvents: "none" }}>
+            <Search size={14} />
+          </span>
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search tickets & requesters…"
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              background: T.raised,
+              border: `1px solid ${T.border}`,
+              borderRadius: 8,
+              color: T.t1,
+              padding: "8px 10px 8px 32px",
+              fontSize: 13,
+              outline: "none",
+              fontFamily: F.sans,
+            }}
+          />
+        </div>
       </div>
-      {listOpen && (
-        <div style={{ padding: "8px 12px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", background: T.canvas }}>
+      <div style={{ padding: "8px 12px 10px", borderBottom: `1px solid ${T.border}`, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", background: T.canvas }}>
           {filterPills.map((p) => (
             <button
               key={p.key}
@@ -506,8 +532,7 @@ export default function InboxScreen({ T, isMobile }) {
           >
             Sort · {sortKey}
           </button>
-        </div>
-      )}
+      </div>
       <div
         style={{
           flex: 1,
@@ -533,6 +558,7 @@ export default function InboxScreen({ T, isMobile }) {
               tabIndex={0}
               onClick={() => {
                 setActiveThreadId(th.id);
+                setTicketsOpen(false);
                 if (isMobile) setMobilePane("thread");
               }}
               onKeyDown={(e) => e.key === "Enter" && setActiveThreadId(th.id)}
@@ -575,8 +601,7 @@ export default function InboxScreen({ T, isMobile }) {
                     }}
                   />
                 </div>
-                {listOpen && (
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 2 }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: T.t2, fontFamily: F.mono }}>{th.ticketId}</span>
                       <span style={{ fontSize: 10, color: T.t4, flexShrink: 0 }}>{th.updated}</span>
@@ -610,7 +635,6 @@ export default function InboxScreen({ T, isMobile }) {
                       )}
                     </div>
                   </div>
-                )}
               </div>
             </div>
           );
@@ -725,25 +749,6 @@ export default function InboxScreen({ T, isMobile }) {
         gap: 12,
       }}
     >
-      {isMobile && mobilePane === "thread" && (
-        <button
-          type="button"
-          onClick={() => setMobilePane("list")}
-          style={{
-            border: "none",
-            background: T.raised,
-            borderRadius: 8,
-            padding: "6px 8px",
-            cursor: "pointer",
-            color: T.t2,
-            display: "flex",
-            alignItems: "center",
-          }}
-          aria-label="Back to list"
-        >
-          <ChevronLeft size={18} />
-        </button>
-      )}
       <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <span style={{ fontFamily: F.mono, fontSize: 12, fontWeight: 700, color: T.accent }}>{thread.ticketId}</span>
@@ -1006,7 +1011,7 @@ export default function InboxScreen({ T, isMobile }) {
         flex: 1,
         minHeight: 0,
         width: "100%",
-        overflow: "hidden",
+        overflow: "visible",
         gap: 0,
       }}
     >
@@ -1031,9 +1036,113 @@ export default function InboxScreen({ T, isMobile }) {
         <SubNav T={T} tabs={inboxSubTabs} active={subTab} onChange={setSubTab} />
       </div>
 
+      <div ref={ticketsBarRef} style={{ flexShrink: 0, marginTop: 10, position: "relative", zIndex: 25 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+            padding: "10px 4px 12px",
+            background: T.raised,
+            border: `1px solid ${T.borderMuted ?? T.border}`,
+            borderRadius: 12,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setTicketsOpen((o) => !o)}
+            style={{
+              padding: "6px 14px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: ticketsOpen ? T.accentBg : "transparent",
+              border: ticketsOpen ? `1px solid ${T.accentBorder}` : "1px solid transparent",
+              borderRadius: 9999,
+              color: ticketsOpen ? T.accent : T.t2,
+              fontSize: 14,
+              fontWeight: ticketsOpen ? 600 : 500,
+              cursor: "pointer",
+              fontFamily: F.sans,
+              transition: "all .12s",
+              maxWidth: "100%",
+            }}
+          >
+            <Inbox size={16} strokeWidth={SW} />
+            <span style={{ whiteSpace: "nowrap" }}>Tickets</span>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                fontVariantNumeric: "tabular-nums",
+                background: T.surface,
+                border: `1px solid ${T.border}`,
+                borderRadius: 99,
+                padding: "1px 8px",
+                color: T.t2,
+              }}
+            >
+              {filteredThreads.length}
+            </span>
+            {thread && (
+              <span
+                style={{
+                  fontSize: 12,
+                  color: T.t3,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: isMobile ? 140 : 280,
+                  fontFamily: F.mono,
+                }}
+              >
+                {thread.ticketId} · {thread.subject}
+              </span>
+            )}
+            <ChevronDown
+              size={16}
+              strokeWidth={SW}
+              color={T.t3}
+              style={{
+                transform: ticketsOpen ? "rotate(180deg)" : "none",
+                transition: "transform .15s ease",
+              }}
+            />
+          </button>
+        </div>
+        {ticketsOpen && (
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: "100%",
+              marginTop: 8,
+              borderRadius: 12,
+              border: `1px solid ${T.borderMuted ?? T.border}`,
+              background: T.surface,
+              boxShadow: T.shadowMd ?? T.shadowLg,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                maxHeight: isMobile ? "min(65vh, 520px)" : 420,
+                minHeight: 200,
+              }}
+            >
+              {ThreadList}
+            </div>
+          </div>
+        )}
+      </div>
+
       <div
         style={{
-          marginTop: 20,
+          marginTop: 16,
           flex: 1,
           minHeight: 0,
           display: "flex",
@@ -1070,15 +1179,22 @@ export default function InboxScreen({ T, isMobile }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: navOpen ? "space-between" : "center",
-                padding: navOpen ? "10px 10px 10px 12px" : "12px 8px",
+                padding: navOpen ? "10px 10px 10px 12px" : "10px 8px",
                 borderBottom: navOpen ? `1px solid ${T.borderMuted ?? T.border}` : "none",
                 flexShrink: 0,
+                flexDirection: navOpen ? "row" : "column",
+                gap: navOpen ? 0 : 8,
               }}
             >
               {navOpen && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                   <PanelLeft size={17} strokeWidth={SW} color={T.t2} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: T.t1 }}>Views</span>
+                </div>
+              )}
+              {!navOpen && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%" }} title="Views — workspace, inbox, status, channels, team">
+                  <LayoutGrid size={20} strokeWidth={SW} color={T.accent} />
                 </div>
               )}
               <button
@@ -1101,65 +1217,6 @@ export default function InboxScreen({ T, isMobile }) {
               </button>
             </div>
             <div style={{ flex: 1, overflow: "auto", padding: navOpen ? "12px 10px 16px" : "10px 6px 16px" }}>{NavSections}</div>
-          </aside>
-        )}
-
-        {/* Thread list rail */}
-        {(!isMobile || mobilePane === "list") && (
-          <aside
-            style={{
-              ...(isMobile
-                ? { flex: "1 1 0%", width: "100%", minWidth: 0 }
-                : {
-                    flex: "0 0 auto",
-                    width: listW,
-                    maxWidth: listW,
-                    minWidth: 0,
-                  }),
-              flexShrink: isMobile ? 1 : undefined,
-              minHeight: 0,
-              transition: isMobile ? undefined : "width 0.22s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
-              borderRight: isMobile ? "none" : `1px solid ${T.borderMuted ?? T.border}`,
-              background: T.surface,
-              display: "flex",
-              flexDirection: "column",
-              overflow: "hidden",
-              position: "relative",
-              zIndex: 2,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: listOpen ? "space-between" : "center",
-                padding: listOpen ? "10px 12px" : "12px 8px",
-                borderBottom: listOpen ? `1px solid ${T.borderMuted ?? T.border}` : "none",
-                flexShrink: 0,
-                background: T.raised,
-              }}
-            >
-              {listOpen && <span style={{ fontSize: 13, fontWeight: 600, color: T.t1 }}>Tickets</span>}
-              {!isMobile && (
-                <button
-                  type="button"
-                  title={listOpen ? "Collapse list" : "Expand list"}
-                  onClick={() => persistList(!listOpen)}
-                  style={{
-                    border: "none",
-                    background: T.surface,
-                    borderRadius: 8,
-                    padding: 6,
-                    cursor: "pointer",
-                    color: T.t2,
-                    display: "flex",
-                  }}
-                >
-                  {listOpen ? <ChevronLeft size={18} strokeWidth={SW} /> : <ChevronRight size={18} strokeWidth={SW} />}
-                </button>
-              )}
-            </div>
-            {ThreadList}
           </aside>
         )}
 
