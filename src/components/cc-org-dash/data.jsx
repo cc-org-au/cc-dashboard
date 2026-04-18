@@ -118,6 +118,9 @@ export const FILE_DATA = {
     { id: "f13", name: "EcoScan Results — Grid 7B.json", type: "code", size: "2.4 MB", modified: "Apr 18, 2026", owner: "EcoScan GPT-4o",  shared: 3 },
     { id: "f14", name: "Climate Forecast Q2.pdf",        type: "pdf",  size: "890 KB", modified: "Apr 17, 2026", owner: "ClimateOracle",   shared: 2 },
   ],
+  legal: [],
+  shared: [],
+  trash: [],
 };
 
 export const FILE_ICONS = { pdf: "📄", document: "📝", spreadsheet: "📊", image: "🖼", archive: "📦", code: "{ }", video: "🎬", default: "📄" };
