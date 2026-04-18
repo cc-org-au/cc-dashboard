@@ -404,7 +404,7 @@ export function SubNav({ T, tabs, active, onChange }) {
 }
 
 // GitHub-style breadcrumb page header
-export function PageHeader({ T, org = "ecoos-global", name, description, actions, icon }) {
+export function PageHeader({ T, org = "cc-org-dash-global", name, description, actions, icon }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, paddingBottom: 16, borderBottom: `1px solid ${T.border}`, marginBottom: 0 }}>
       <div style={{ minWidth: 0, flex: 1 }}>

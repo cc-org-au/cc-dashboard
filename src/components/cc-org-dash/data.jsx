@@ -1,4 +1,4 @@
-// Stub data for EcoOS demo
+// Stub data for cc-org-dash demo
 export const spark = (n = 14) => Array.from({ length: n }, () => Math.random() * 60 + 20);
 
 export const DB = {
@@ -71,7 +71,7 @@ export const DB = {
     ag1: [
       { role: "assistant", name: "SalesGPT", content: "Good morning. Your pipeline has 3 deals closing this week worth $84K combined. Acme Corp needs a follow-up — last contact was 6 days ago.", time: "09:00" },
       { role: "user",      name: "You",      content: "Draft a follow-up email for Acme Corp.", time: "09:02" },
-      { role: "assistant", name: "SalesGPT", content: "Subject: Following up — EcoOS Enterprise Proposal\n\nHi [Name],\n\nI wanted to follow up on the proposal we shared last week. Given your team's goals around centralising operations, I believe EcoOS could save you significant coordination overhead.\n\nAre you available for a 20-minute call this Thursday?\n\nBest,\n[Your name]", time: "09:02" },
+      { role: "assistant", name: "SalesGPT", content: "Subject: Following up — cc-org-dash Enterprise Proposal\n\nHi [Name],\n\nI wanted to follow up on the proposal we shared last week. Given your team's goals around centralising operations, I believe cc-org-dash could save you significant coordination overhead.\n\nAre you available for a 20-minute call this Thursday?\n\nBest,\n[Your name]", time: "09:02" },
     ],
     ag2: [
       { role: "assistant", name: "DataOracle", content: "Q2 revenue forecast: $1.14M (↑9% vs Q1). Confidence: 87%. Primary driver: EMEA pipeline converted at 34%.", time: "08:30" },

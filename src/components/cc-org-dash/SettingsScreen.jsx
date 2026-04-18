@@ -66,7 +66,7 @@ export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
 
           {tab === "general" && (
             <div style={{ maxWidth: 520 }}>
-              <Field label="Organisation Name" T={T}><Input T={T} defaultValue="EcoOS Global" /></Field>
+              <Field label="Organisation Name" T={T}><Input T={T} defaultValue="cc-org-dash Global" /></Field>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <Field label="Timezone" T={T}><Select T={T} style={{ width: "100%" }}>{["Australia/Sydney", "UTC", "America/New_York", "Europe/London"].map(z => <option key={z}>{z}</option>)}</Select></Field>
                 <Field label="Currency" T={T}><Select T={T} style={{ width: "100%" }}>{["USD", "AUD", "EUR", "GBP"].map(c => <option key={c}>{c}</option>)}</Select></Field>
@@ -104,7 +104,7 @@ export default function SettingsScreen({ T, themeKey, setTheme, isMobile }) {
               <Field label="Default Model" T={T}>
                 <Select T={T} style={{ width: "100%" }}>{["gpt-4o", "gpt-4o-mini", "claude-3.5-sonnet", "claude-3-haiku"].map(m => <option key={m}>{m}</option>)}</Select>
               </Field>
-              <Field label="LangSmith Project" T={T}><Input T={T} defaultValue="ecoos-production" /></Field>
+              <Field label="LangSmith Project" T={T}><Input T={T} defaultValue="cc-org-dash-production" /></Field>
               <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
                 <Btn T={T} variant="primary" onClick={save}>{saved ? "✓ Saved" : "Save"}</Btn>
               </div>

@@ -1,22 +1,22 @@
-// EcoOS — GitHub-inspired Business Command Center
+// cc-org-dash — GitHub-inspired Business Command Center
 import { useState, useEffect } from "react";
-import { THEMES, Avi, F } from "../components/ecoos/primitives";
-import { DB } from "../components/ecoos/data";
-import HomeScreen from "../components/ecoos/HomeScreen";
-import WorkScreen from "../components/ecoos/WorkScreen";
-import InboxScreen from "../components/ecoos/InboxScreen";
-import PeopleScreen from "../components/ecoos/PeopleScreen";
-import DataScreen from "../components/ecoos/DataScreen";
-import FilesScreen from "../components/ecoos/FilesScreen";
-import IntegrationsScreen from "../components/ecoos/IntegrationsScreen";
-import SettingsScreen from "../components/ecoos/SettingsScreen";
-import AccountScreen from "../components/ecoos/AccountScreen";
-import NotifDrawer from "../components/ecoos/NotifDrawer";
-import useIsMobile from "../components/ecoos/useIsMobile";
+import { THEMES, Avi, F } from "../components/cc-org-dash/primitives";
+import { DB } from "../components/cc-org-dash/data";
+import HomeScreen from "../components/cc-org-dash/HomeScreen";
+import WorkScreen from "../components/cc-org-dash/WorkScreen";
+import InboxScreen from "../components/cc-org-dash/InboxScreen";
+import PeopleScreen from "../components/cc-org-dash/PeopleScreen";
+import DataScreen from "../components/cc-org-dash/DataScreen";
+import FilesScreen from "../components/cc-org-dash/FilesScreen";
+import IntegrationsScreen from "../components/cc-org-dash/IntegrationsScreen";
+import SettingsScreen from "../components/cc-org-dash/SettingsScreen";
+import AccountScreen from "../components/cc-org-dash/AccountScreen";
+import NotifDrawer from "../components/cc-org-dash/NotifDrawer";
+import useIsMobile from "../components/cc-org-dash/useIsMobile";
 import {
   Home, Briefcase, Inbox, Users, BarChart3, FolderOpen, Plug, SettingsIcon,
   Search, Bell, Plus, ChevronDown, User, LogOut, GitBranch
-} from "../components/ecoos/icons";
+} from "../components/cc-org-dash/icons";
 
 const TABS = [
   { id: "home",         label: "Dashboard",     icon: <Home size={16} /> },
@@ -29,20 +29,28 @@ const TABS = [
   { id: "settings",     label: "Settings",      icon: <SettingsIcon size={16} /> },
 ];
 
+const THEME_KEY = "cc-org-dash-theme";
+const THEME_KEY_LEGACY = "ecoos_theme";
+
 function readStoredTheme() {
   try {
-    return localStorage.getItem("ecoos_theme") || "light";
+    return (
+      localStorage.getItem(THEME_KEY) ||
+      localStorage.getItem(THEME_KEY_LEGACY) ||
+      "light"
+    );
   } catch {
     return "light";
   }
 }
 
-export default function EcoOS() {
+export default function CcOrgDash() {
   const [themeKey, setThemeKey] = useState(readStoredTheme);
   const T = THEMES[themeKey] || THEMES.light;
   const setTheme = (k) => {
     try {
-      localStorage.setItem("ecoos_theme", k);
+      localStorage.setItem(THEME_KEY, k);
+      localStorage.removeItem(THEME_KEY_LEGACY);
     } catch {
       /* quota / private mode */
     }

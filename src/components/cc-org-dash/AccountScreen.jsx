@@ -39,7 +39,7 @@ export default function AccountScreen({ T, setTab, isMobile }) {
               <div style={{ width: 80, height: 80, borderRadius: "50%", background: T.accent, border: `4px solid ${T.surface}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 30, fontWeight: 700, boxShadow: T.shadowMd, fontFamily: F.sans }}>E</div>
               <div style={{ paddingBottom: 4 }}>
                 <div style={{ color: T.t1, fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em" }}>EcoAdmin</div>
-                <div style={{ color: T.t2, fontSize: 14 }}>ecoadmin · admin@ecoos.io</div>
+                <div style={{ color: T.t2, fontSize: 14 }}>ccdashadmin · admin@cc-org-dash.io</div>
                 <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                   <Badge T={T} color={T.green}>Active</Badge>
                   <Badge T={T}>Administrator</Badge>
@@ -95,7 +95,7 @@ export default function AccountScreen({ T, setTab, isMobile }) {
             <div>
               <div style={{ color: T.t1, fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Profile Details</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-                {[["Full name", "EcoAdmin"], ["Email", "admin@ecoos.io"], ["Role", "Administrator"], ["Organisation", "EcoOS Global"], ["Timezone", "Australia/Sydney"], ["Member since", "Jan 15, 2026"]].map(([k, v]) => (
+                {[["Full name", "EcoAdmin"], ["Email", "admin@cc-org-dash.io"], ["Role", "Administrator"], ["Organisation", "cc-org-dash Global"], ["Timezone", "Australia/Sydney"], ["Member since", "Jan 15, 2026"]].map(([k, v]) => (
                   <div key={k}>
                     <div style={{ color: T.t2, fontSize: 12, fontWeight: 600, marginBottom: 3 }}>{k}</div>
                     <div style={{ color: T.t1, fontSize: 13, fontWeight: 400 }}>{v}</div>
@@ -163,7 +163,7 @@ export default function AccountScreen({ T, setTab, isMobile }) {
 
       <Modal T={T} open={editOpen} onClose={() => setEditOpen(false)} title="Edit Profile">
         <Field label="Display name" T={T}><Input T={T} defaultValue="EcoAdmin" /></Field>
-        <Field label="Email" T={T}><Input T={T} defaultValue="admin@ecoos.io" type="email" /></Field>
+        <Field label="Email" T={T}><Input T={T} defaultValue="admin@cc-org-dash.io" type="email" /></Field>
         <Field label="Role / title" T={T}><Input T={T} defaultValue="Administrator" /></Field>
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <Btn T={T} variant="default" onClick={() => setEditOpen(false)}>Cancel</Btn>

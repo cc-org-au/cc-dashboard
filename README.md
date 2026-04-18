@@ -1,6 +1,6 @@
 # CC Dashboard
 
-Local-first dashboard UI (EcoOS shell, roster/reporting views, and related screens).
+Local-first dashboard UI (cc-org-dash shell, roster/reporting views, and related screens).
 
 ## Prerequisites
 
