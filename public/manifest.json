@@ -1,0 +1,8 @@
+{
+  "name": "CC Dashboard",
+  "short_name": "CC Dash",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fd",
+  "theme_color": "#3b82f6"
+}

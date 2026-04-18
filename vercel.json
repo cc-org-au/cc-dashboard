@@ -1,4 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/cc-org-dash", "destination": "/index.html" },
+    { "source": "/EcoOS", "destination": "/index.html" },
+    { "source": "/ecoos", "destination": "/index.html" },
+    { "source": "/Dashboard_new", "destination": "/index.html" },
+    { "source": "/Dashboard", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
